@@ -370,7 +370,7 @@ S.tab="projets";DM="";S.bm="";
 if(!ENT()){S.bm="Lien pour le mode Entreprise.";return true}
 const p=S.projects.find(x=>String(x.id)===m[1]);const k=m[2]?+m[2]:(p?(p.hid?(p.dn||0):(p.dn||0)+1):0),R=m[1]+"-"+k;
 if(!p)S.bm="Projet introuvable sur cet appareil.";
-else if(!dosCheck(R,m[3]))S.bm="Lien incorrect.";
+else if(!dosCheck(m[1],m[3]))S.bm="Lien incorrect.";
 else if(k===(p.dn||0)+1&&!p.hid){p.dos={t:Date.now()};S.cur=p.id;save();licCnt("dossier-ok","Dossier prêt");DM="⏳ Téléchargement…";dosAuto(p.id,k)}
 else if(k===p.dn&&p.hid){p.dos={t:Date.now()};S.cur=p.id;save();DM="⏳ Téléchargement…";dosAuto(p.id,k)}
 else S.bm=k<(p.dn||0)+1?"Lien déjà utilisé.":"Lien incorrect.";

@@ -375,5 +375,5 @@ else if(k===(p.dn||0)+1&&!p.hid){p.dos={t:Date.now()};S.cur=p.id;save();licCnt("
 else if(k===p.dn&&p.hid){p.dos={t:Date.now()};S.cur=p.id;save();DM="⏳ Téléchargement…";dosAuto(p.id,k)}
 else S.bm=k<(p.dn||0)+1?"Lien déjà utilisé.":"Lien incorrect.";
 return true}
-dosLien();addEventListener("hashchange",()=>{if(dosLien())go()});
+if(dosLien())go();addEventListener("hashchange",()=>{if(dosLien())go()});
 (()=>{const st=document.createElement("style");st.textContent='@media print{body.noprt>*{display:none!important}body.noprt::before{content:"Impression : attachement seulement";display:block;text-align:center;font-size:18px;padding:40px}}';document.head.appendChild(st)})();

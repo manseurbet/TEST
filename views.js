@@ -365,10 +365,10 @@ function dosAuto(id,k){setTimeout(()=>{const p=S.projects.find(x=>x.id==id);if(!
 function dosGo(id){const p=S.projects.find(x=>x.id==id);exportX(id);if(p&&p.dos){const k=p.dos.k;setTimeout(()=>{dosWipe(p,k);go("projets")},1500)}}
 function dosRe(){const p=S.projects[0];if(!p||!p.hid)return;p.dos={t:Date.now()};S.cur=p.id;DM="";save();dosAuto(p.id,p.dn||0)}
 /* lien d'OK : https://…/#dossier=PROJET-N°~CODE → télécharge ce dossier-là seulement ; un OK déjà utilisé est refusé */
-function dosLien(){const m=location.hash.match(/^#dossier=(\d+)-(\d+)~([A-Za-z0-9\-]+)/);if(!m)return false;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
+function dosLien(){const m=location.hash.match(/^#dossier=(\d+)(?:-(\d+))?~([A-Za-z0-9\-]+)/);if(!m)return false;try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}
 S.tab="projets";DM="";S.bm="";
 if(!ENT()){S.bm="Lien pour le mode Entreprise.";return true}
-const R=m[1]+"-"+m[2],k=+m[2],p=S.projects.find(x=>String(x.id)===m[1]);
+const p=S.projects.find(x=>String(x.id)===m[1]);const k=m[2]?+m[2]:(p?(p.hid?(p.dn||0):(p.dn||0)+1):0),R=m[1]+"-"+k;
 if(!p)S.bm="Projet introuvable sur cet appareil.";
 else if(!dosCheck(R,m[3]))S.bm="Lien incorrect.";
 else if(k===(p.dn||0)+1&&!p.hid){p.dos={t:Date.now()};S.cur=p.id;save();licCnt("dossier-ok","Dossier prêt");DM="⏳ Téléchargement…";dosAuto(p.id,k)}

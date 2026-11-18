@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Générateur de dossiers – Entrepreneur</title>
+<style>body{font-family:system-ui,Arial,sans-serif;max-width:520px;margin:20px auto;padding:0 14px;color:#111}h1{font-size:20px}h2{font-size:17px;margin:26px 0 8px}label{display:block;margin:12px 0 4px;font-weight:600}input,button,textarea{width:100%;padding:12px;font-size:16px;border:1px solid #bbb;border-radius:8px;box-sizing:border-box;font-family:inherit}button{background:#1f4e8c;color:#fff;border:0;margin-top:14px;font-weight:600}#out{display:none;margin-top:16px;padding:14px;background:#f3f5f8;border-radius:8px}#cd{font-size:24px;font-weight:800;letter-spacing:2px;text-align:center}.w{font-size:12px;color:#a00;margin-top:18px}.h{border:1px solid #d5d9df;border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff}.hc{font-family:ui-monospace,Menlo,monospace;font-size:17px;font-weight:700;letter-spacing:1px;margin:2px 0}.hm{font-size:13px;color:#555;line-height:1.5}.hb{display:flex;gap:8px;margin-top:8px}.hb a,.hb button{flex:1;margin:0;padding:10px;font-size:14px;border-radius:8px;text-align:center;text-decoration:none;box-sizing:border-box;font-weight:600}</style></head><body>
+<h1>📦 Générateur de dossiers – Entrepreneur</h1>
+<p>Situations_DGD – usage personnel de Manseur BET. <b>Ne publiez pas ce fichier</b> (ne le déposez pas sur GitHub). Il ne sert qu’à répondre « OK » à un entrepreneur qui a appuyé sur « Envoyer ».</p>
+<label for="dm">Message reçu de l’entrepreneur (collez-le en entier)</label>
+<textarea id="dm" rows="6" placeholder="Dossier à préparer – situation-dgd.com&#10;Entrepreneur : …&#10;Projet : …&#10;Devis HT : …&#10;Réf : …"></textarea>
+<label for="dn">Numéro WhatsApp de l’entrepreneur (facultatif)</label><input id="dn" type="tel" inputmode="tel" placeholder="ex. 0555 12 34 56" autocomplete="off">
+<label for="u">Adresse de votre site</label><input id="u" type="url" inputmode="url" placeholder="https://situation-dgd.com/" autocomplete="off" oninput="try{localStorage.setItem('sdgd_site',this.value)}catch(e){}">
+<button onclick="ok()">✅ Préparer l’OK</button>
+<div id="out"><div id="cd"></div>
+<textarea id="msg" readonly rows="3" onclick="this.select()" style="margin-top:10px;font-size:15px;background:#fff"></textarea>
+<a id="wa" href="#" target="_blank" rel="noopener" style="display:block;margin-top:12px;padding:14px;background:#25d366;color:#fff;text-align:center;border-radius:8px;font-weight:700;text-decoration:none;font-size:16px">📲 Envoyer l’OK par WhatsApp</a>
+<button onclick="cp()" style="background:#555">📋 Copier le lien</button>
+<div id="info" style="margin-top:8px;text-align:center;color:#a00"></div></div>
+<h2>📒 Historique <span id="hc" style="color:#666;font-weight:400"></span></h2>
+<input id="hf" placeholder="Chercher un projet, un nom ou une référence" oninput="rh()" autocomplete="off">
+<div id="hl"></div>
+<button onclick="ex()" style="background:#555">📊 Exporter (CSV)</button>
+<p class="w">Chaque lien ne débloque que le projet dont la référence figure dans le message. Un projet réinitialisé reçoit une nouvelle référence : il faut alors un nouvel OK.</p>
+<script>
+/* même secret que l’application : le lien n’est reconnu que si le secret est identique à celui de core.js */
+const LIC_SECRET="89737dff280f36580736";
+const h53=s=>{let a=0xdeadbeef,b=0x41c6ce57;for(let i=0,c;i<s.length;i++){c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return 4294967296*(2097151&b)+(a>>>0)};
+const dosHash=id=>h53(LIC_SECRET+"|DOSSIER|"+id).toString(36).toUpperCase().padStart(11,"0").slice(0,8);
+const dosCode=id=>{const c=dosHash(id);return c.slice(0,4)+"-"+c.slice(4)};
+const norm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
+const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fd=ms=>new Date(ms).toLocaleDateString("fr-FR");
+function wnum(v){let n=String(v||"").replace(/[^0-9+]/g,"");if(!n)return"";if(n[0]=="+")return n.slice(1);if(n.startsWith("00"))return n.slice(2);if(n[0]=="0")return"213"+n.slice(1);return n}
+const HK="sdgd_dossiers";
+const hget=()=>{try{return JSON.parse(localStorage.getItem(HK))||[]}catch(e){return[]}};
+const hset=a=>{try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){alert("Enregistrement impossible : l’historique ne sera pas conservé.")}};
+const MSG=l=>"✅ Dossier prêt. Cliquez ici :\n"+l;
+function ok(){const t=document.getElementById("dm").value,r=t.match(/R[ée]f\s*:\s*(\d{6,})/i),pj=t.match(/Projet\s*:\s*(.+)/i),en=t.match(/Entrepreneur\s*:\s*(.+)/i),ht=t.match(/Devis HT\s*:\s*(.+)/i),e=document.getElementById("info"),o=document.getElementById("out");
+o.style.display="block";
+if(!r){e.textContent="Référence introuvable : collez le message complet (ligne « Réf : … »).";document.getElementById("cd").textContent="";return}
+let site=document.getElementById("u").value.trim().replace(/#.*$/,"");if(site&&!/^https?:\/\//i.test(site))site="https://"+site;if(site&&!/\/$/.test(site)&&!/\.html?$/i.test(site))site+="/";
+if(!site){e.textContent="Saisissez l’adresse de votre site.";return}
+const code=dosCode(r[1]),lien=site+"#dossier="+r[1]+"~"+code,num=document.getElementById("dn").value.trim();
+const a=hget(),i=a.findIndex(x=>x.ref===r[1]),ent={ref:r[1],c:code,l:lien,t:num,d:Date.now(),p:pj?pj[1].trim():"",e:en&&en[1].trim()!="—"?en[1].trim():"",h:ht?ht[1].trim():""};
+if(i>=0){ent.d=a[i].d;if(!ent.t)ent.t=a[i].t;a[i]=ent}else a.unshift(ent);hset(a);rh();
+document.getElementById("cd").textContent=code;document.getElementById("msg").value=MSG(lien);e.textContent="";
+document.getElementById("wa").href="https://wa.me/"+wnum(num)+"?text="+encodeURIComponent(MSG(lien))}
+function cp(){const m=document.getElementById("msg"),i=document.getElementById("info"),done=()=>{i.style.color="#070";i.textContent="✅ Lien copié."};
+const old=()=>{m.removeAttribute("readonly");m.focus();m.select();m.setSelectionRange(0,99999);let r=false;try{r=document.execCommand("copy")}catch(e){}m.setAttribute("readonly","");if(r)done();else{i.style.color="#a00";i.textContent="Copie impossible : touchez le texte, « Tout sélectionner », puis « Copier »."}};
+if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(m.value).then(done).catch(old);else old()}
+function rh(){const a=hget(),q=norm(document.getElementById("hf").value),box=document.getElementById("hl");document.getElementById("hc").textContent=a.length?"("+a.length+")":"";
+const L=a.map((e,i)=>({e,i})).filter(o=>!q||norm(o.e.p).includes(q)||norm(o.e.e).includes(q)||o.e.ref.includes(q));
+box.innerHTML=L.length?L.map(o=>{const e=o.e;return'<div class="h"><b>'+esc(e.p||"Projet")+'</b>'+(e.e?" · "+esc(e.e):"")+'<div class="hc">'+esc(e.c)+'</div><div class="hm">Réf '+esc(e.ref)+" · OK le "+fd(e.d)+(e.h?" · "+esc(e.h):"")+(e.t?"<br>📱 "+esc(e.t):"")+'</div><div class="hb"><a href="https://wa.me/'+wnum(e.t)+"?text="+encodeURIComponent(MSG(e.l))+'" target="_blank" rel="noopener" style="background:#25d366;color:#fff">📲 WhatsApp</a><button onclick="hcp('+o.i+')" style="background:#555">📋 Lien</button><button onclick="hdel('+o.i+')" style="background:#a00;flex:0 0 52px">🗑</button></div></div>'}).join(""):'<div class="hm" style="text-align:center;padding:12px">'+(a.length?"Aucun résultat.":"Aucun OK généré pour le moment.")+"</div>"}
+function hdel(i){const a=hget();if(!a[i]||!confirm("Supprimer « "+(a[i].p||a[i].ref)+" » de l’historique ?"))return;a.splice(i,1);hset(a);rh()}
+function hcp(i){const e=hget()[i];if(!e)return;const t=document.createElement("textarea");t.value=e.l;document.body.appendChild(t);t.select();let r=false;try{r=document.execCommand("copy")}catch(x){}t.remove();if(!r&&navigator.clipboard)navigator.clipboard.writeText(e.l);alert("Lien copié.")}
+function ex(){const a=hget();if(!a.length){alert("Historique vide.");return}const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"',h=["Projet","Entrepreneur","Réf","Code","WhatsApp","Devis HT","Date de l’OK","Lien"];
+const rows=[h.map(q).join(";")].concat(a.map(e=>[e.p,e.e,e.ref,e.c,e.t||"",e.h||"",fd(e.d),e.l].map(q).join(";")));
+const b=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),l=document.createElement("a"),t=new Date();
+l.href=u;l.download="historique-dossiers-"+t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")+".csv";document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+rh();
+try{const v=localStorage.getItem("sdgd_site")||"";document.getElementById("u").value=(!v||/github\.io/i.test(v))?"https://situation-dgd.com/":v}catch(e){document.getElementById("u").value="https://situation-dgd.com/"}
+</script></body></html>

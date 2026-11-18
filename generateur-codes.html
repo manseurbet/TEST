@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Générateur de codes – Situations_DGD</title>
+<style>body{font-family:system-ui,Arial,sans-serif;max-width:520px;margin:20px auto;padding:0 14px;color:#111}h1{font-size:20px}label{display:block;margin:12px 0 4px;font-weight:600}input,select,button{width:100%;padding:12px;font-size:16px;border:1px solid #bbb;border-radius:8px;box-sizing:border-box}button{background:#1f4e8c;color:#fff;border:0;margin-top:14px;font-weight:600}#out{margin-top:16px;padding:14px;background:#f3f5f8;border-radius:8px;font-size:15px}textarea{width:100%;box-sizing:border-box;padding:10px;border:1px solid #bbb;border-radius:8px;font-family:inherit}#cd{font-size:24px;font-weight:800;letter-spacing:2px;text-align:center}.w{font-size:12px;color:#a00;margin-top:18px}h2{font-size:17px;margin:26px 0 8px}.h{border:1px solid #d5d9df;border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff}.h b{font-size:16px}.hc{font-family:ui-monospace,Menlo,monospace;font-size:17px;font-weight:700;letter-spacing:1px;margin:2px 0}.hm{font-size:13px;color:#555;line-height:1.5}.hb{display:flex;gap:8px;margin-top:8px}.hb a,.hb button{flex:1;margin:0;padding:10px;font-size:14px;border-radius:8px;text-align:center;text-decoration:none;box-sizing:border-box;font-weight:600}.st{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px}.sa{background:#c6efce;color:#006100}.se{background:#ffc7ce;color:#9c0006}</style></head><body>
+<h1>🔑 Générateur de codes d’activation</h1>
+<p>Situations_DGD – usage personnel de Manseur BET. <b>Ne publiez pas ce fichier</b> (ne le déposez pas sur GitHub).</p>
+<label for="n">Nom du titulaire</label><input id="n" placeholder="ex. Cabinet Benali" autocomplete="off">
+<label for="d">Durée de la licence</label>
+<select id="d"><option value="1">Test – 1 jour</option><option value="30" selected>Essai gratuit – 30 jours</option><option value="92">3 mois</option><option value="183">6 mois</option><option value="365">1 an</option><option value="0">Sans limite de durée</option></select>
+<label for="u">Adresse de votre site (obligatoire pour créer le lien)</label><input id="u" type="url" inputmode="url" placeholder="https://situation-dgd.com/" autocomplete="off" oninput="try{localStorage.setItem('sdgd_site',this.value)}catch(e){}">
+<label for="t">Numéro WhatsApp du testeur (facultatif)</label><input id="t" type="tel" inputmode="tel" placeholder="ex. 0555 12 34 56" autocomplete="off">
+<button onclick="gen()">Générer le code</button>
+<div id="out" style="display:none"><div id="cd"></div>
+<textarea id="msg" readonly rows="4" onclick="this.select()" style="margin-top:10px;font-size:15px;background:#fff"></textarea>
+<a id="wa" href="#" target="_blank" rel="noopener" style="display:block;margin-top:12px;padding:14px;background:#25d366;color:#fff;text-align:center;border-radius:8px;font-weight:700;text-decoration:none;font-size:16px">📲 Envoyer par WhatsApp</a>
+<button onclick="cp()" style="background:#555">📋 Copier le lien</button>
+<div id="ok" style="margin-top:8px;text-align:center;color:#070"></div></div>
+<h2>📒 Historique <span id="hc" style="color:#666;font-weight:400"></span></h2>
+<input id="hf" placeholder="Chercher un nom ou un code" oninput="rh()" autocomplete="off">
+<div id="hl"></div>
+<button onclick="ex()" style="background:#555">📊 Exporter (Excel / CSV)</button>
+<p class="w">Le code est lié au nom saisi : le titulaire doit entrer exactement le même nom (majuscules et accents sans importance).</p>
+<script>
+
+/* ===== Licence : essai complet de 30 jours, puis filigrane « VERSION D’ESSAI » à l’impression et dans l’export Excel, jusqu’à l’activation par code ===== */
+const LIC_SECRET="89737dff280f36580736",LIC_DAY=864e5,LIC_D0=Date.UTC(2024,0,1),LIC_TRIAL=30;
+const h53=s=>{let a=0xdeadbeef,b=0x41c6ce57;for(let i=0,c;i<s.length;i++){c=s.charCodeAt(i);a=Math.imul(a^c,2654435761);b=Math.imul(b^c,1597334677)}a=Math.imul(a^(a>>>16),2246822507)^Math.imul(b^(b>>>13),3266489909);b=Math.imul(b^(b>>>16),2246822507)^Math.imul(a^(a>>>13),3266489909);return 4294967296*(2097151&b)+(a>>>0)};
+const licNorm=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim();
+const licHash=(n,e)=>h53(LIC_SECRET+"|"+licNorm(n)+"|"+e).toString(36).toUpperCase().padStart(11,"0").slice(0,8);
+const licCode=(n,days)=>{const e=days.toString(36).toUpperCase().padStart(3,"0"),c=e+licHash(n,e);return c.slice(0,3)+"-"+c.slice(3,7)+"-"+c.slice(7)};
+const licCheck=(n,code)=>{const c=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");if(c.length!=11||!licNorm(n))return null;const amb={"0":"0O",O:"0O","1":"1I",I:"1I"};let vs=[""];for(const ch of c){const o=amb[ch]||ch,nv=[];for(const v of vs)for(const x of o)nv.push(v+x);vs=nv}for(const v of vs){const e=v.slice(0,3);if(licHash(n,e)===v.slice(3)){const d=parseInt(e,36);return{exp:d?LIC_D0+d*LIC_DAY:0}}}return null}; /* tolère la confusion 0/O et 1/I à la saisie */
+
+function wnum(v){let n=String(v||"").replace(/[^0-9+]/g,"");if(!n)return"";if(n[0]=="+")return n.slice(1);if(n.startsWith("00"))return n.slice(2);if(n[0]=="0")return"213"+n.slice(1);return n}
+function gen(){const n=document.getElementById("n").value.trim();if(!n){alert("Saisissez le nom du titulaire.");return}
+const dur=+document.getElementById("d").value;let days=0,fin="sans limite de durée";
+if(dur){const t=new Date();const end=Date.UTC(t.getFullYear(),t.getMonth(),t.getDate())+dur*LIC_DAY;days=Math.round((end-LIC_D0)/LIC_DAY);fin="valable jusqu’au "+new Date(LIC_D0+days*LIC_DAY).toLocaleDateString("fr-FR")}
+let site=document.getElementById("u").value.trim().replace(/#.*$/,"");if(site&&!/^https?:\/\//i.test(site))site="https://"+site;if(site&&!/\/$/.test(site)&&!/\.html?$/i.test(site))site+="/";
+if(!site){alert("Saisissez d’abord l’adresse de votre site (champ « Adresse de votre site »).");return}
+const code=licCode(n,days),lien=site+"#act="+encodeURIComponent(n)+"~"+code,msg="👉 Cliquez ici pour activer l’application :\n"+lien;
+hadd({n:n,c:code,t:document.getElementById("t").value.trim(),d:Date.now(),dur:dur,fin:dur?LIC_D0+days*LIC_DAY:0,l:lien});document.getElementById("cd").textContent=code;document.getElementById("msg").value=msg;document.getElementById("ok").textContent="";
+document.getElementById("wa").href="https://wa.me/"+wnum(document.getElementById("t").value)+"?text="+encodeURIComponent(msg);
+document.getElementById("out").style.display="block"}
+function cp(){const m=document.getElementById("msg"),ok=()=>document.getElementById("ok").textContent="✅ Lien copié : collez-le dans la conversation.";
+const old=()=>{m.removeAttribute("readonly");m.focus();m.select();m.setSelectionRange(0,99999);let r=false;try{r=document.execCommand("copy")}catch(e){}m.setAttribute("readonly","");if(r)ok();else document.getElementById("ok").textContent="Copie impossible : touchez le lien, « Tout sélectionner », puis « Copier »."};
+if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(m.value).then(ok).catch(old);else old()}
+/* ===== Historique : noms, codes, dates (enregistré dans ce navigateur) ===== */
+const HK="sdgd_hist";
+function hget(){try{return JSON.parse(localStorage.getItem(HK))||[]}catch(e){return[]}}
+function hset(a){try{localStorage.setItem(HK,JSON.stringify(a))}catch(e){alert("Enregistrement impossible : l’historique ne sera pas conservé.")}}
+function esc(t){return String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+const fd=ms=>new Date(ms).toLocaleDateString("fr-FR");
+const durTxt=d=>d==0?"sans limite":d==1?"1 jour":d==92?"3 mois":d==183?"6 mois":d==365?"1 an":d+" jours";
+const actif=e=>!e.fin||Date.now()<e.fin+LIC_DAY;
+function hadd(e){const a=hget(),k=licNorm(e.n),i=a.findIndex(x=>licNorm(x.n)===k&&x.c===e.c);if(i>=0){if(e.t)a[i].t=e.t;a[i].l=e.l}else a.unshift(e);hset(a);rh()}
+function rh(){const a=hget(),q=licNorm(document.getElementById("hf").value),box=document.getElementById("hl");
+document.getElementById("hc").textContent=a.length?"("+a.length+")":"";
+const L=a.map((e,i)=>({e,i})).filter(o=>!q||licNorm(o.e.n).includes(q)||o.e.c.toLowerCase().includes(q));
+box.innerHTML=L.length?L.map(o=>{const e=o.e,ac=actif(e);return'<div class="h"><b>'+esc(e.n)+'</b><span class="st '+(ac?"sa":"se")+'">'+(ac?"Actif":"Expiré")+'</span><div class="hc">'+esc(e.c)+'</div><div class="hm">Créé le '+fd(e.d)+" · "+durTxt(e.dur)+(e.fin?" · jusqu’au "+fd(e.fin):"")+(e.t?"<br>📱 "+esc(e.t):"")+'</div><div class="hb"><a href="https://wa.me/'+wnum(e.t)+"?text="+encodeURIComponent("👉 Cliquez ici pour activer l’application :\n"+e.l)+'" target="_blank" rel="noopener" style="background:#25d366;color:#fff">📲 WhatsApp</a><button onclick="hcp('+o.i+')" style="background:#555">📋 Lien</button><button onclick="hdel('+o.i+')" style="background:#a00;flex:0 0 52px">🗑</button></div></div>'}).join(""):'<div class="hm" style="text-align:center;padding:12px">'+(a.length?"Aucun résultat.":"Aucun code généré pour le moment.")+"</div>"}
+function hdel(i){const a=hget();if(!a[i]||!confirm("Supprimer « "+a[i].n+" » de l’historique ?"))return;a.splice(i,1);hset(a);rh()}
+function hcp(i){const e=hget()[i];if(!e)return;const t=document.createElement("textarea");t.value=e.l;document.body.appendChild(t);t.select();let r=false;try{r=document.execCommand("copy")}catch(x){}t.remove();if(!r&&navigator.clipboard)navigator.clipboard.writeText(e.l);alert("Lien copié.")}
+function ex(){const a=hget();if(!a.length){alert("Historique vide.");return}
+const q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"',h=["Nom","Code","WhatsApp","Date de création","Durée","Expiration","Statut","Lien"];
+const rows=[h.map(q).join(";")].concat(a.map(e=>[e.n,e.c,e.t||"",fd(e.d),durTxt(e.dur),e.fin?fd(e.fin):"",actif(e)?"Actif":"Expiré",e.l].map(q).join(";")));
+const b=new Blob(["\ufeff"+rows.join("\r\n")],{type:"text/csv;charset=utf-8"}),u=URL.createObjectURL(b),l=document.createElement("a"),t=new Date();
+l.href=u;l.download="historique-codes-"+t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")+".csv";document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+rh();
+try{const v=localStorage.getItem("sdgd_site")||"";document.getElementById("u").value=(!v||/github\.io/i.test(v))?"https://situation-dgd.com/":v}catch(e){document.getElementById("u").value="https://situation-dgd.com/"}
+</script></body></html>

@@ -32,7 +32,7 @@ S.msg="";go()}
 function cn(){CM=false;if(CAND[0]&&CAND[0].nm=="Texte collé")S.pz=true;CAND=[];S.msg="";go()}
 function imp(inp,cm){if(!IMPORT_FILE_ON){inp.value="";return}const fl=inp.files[0];if(!fl)return;const p=P();CM=!!cm;if(!cm&&Object.keys(p.val||{}).length){S.msg="Devis verrouillé : des attachements sont déjà validés.";go();return}
 const rd=new FileReader();FN=fl.name;
-rd.onload=e=>{try{if(typeof XLSX==="undefined"){S.msg="La bibliothèque de lecture Excel n’est pas chargée (connexion internet ?). Vérifiez votre connexion puis réessayez.";go();return}const wb=XLSX.read(e.target.result,{type:"array"});
+rd.onload=e=>{try{if(typeof XLSX==="undefined"){S.msg="La bibliothèque de lecture Excel n’est pas chargée (connexion internet ?). Vérifiez votre connexion puis réessayez.";go();return}const wb=XLSX.read(e.target.result,{type:"array"});if(wb.Sheets&&wb.Sheets["_archigest"]){if(p&&!p.items.length&&p.name==="Mon projet"){S.projects=S.projects.filter(x=>x!==p);S.cur=null}S.msg="Ce fichier est une sauvegarde : utilisez « Restaurer » sur l’accueil.";go();return}
 const sh=wb.SheetNames.filter(n=>!/infrastructure/i.test(n)).map(nm=>({nm,rw:XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:""})}));let l=sh.map(x=>({nm:x.nm,it:parseSheet(x.rw)}));if(!l.some(x=>x.it.length))l=sh.map(x=>({nm:x.nm,it:parseSheet(x.rw,2)}));cands(l)}catch(x){S.msg="Fichier illisible. Utilisez un fichier Excel ou CSV.";go()}};
 rd.onerror=()=>{S.msg="Lecture du fichier impossible. Réessayez avec un fichier Excel ou CSV.";go()};rd.readAsArrayBuffer(fl)}
 function ptab(t){const R=[];let r=[],f="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=ch}else if(ch=='"'&&f==="")q=true;else if(ch=="\t"){r.push(f);f=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";R.push(r);r=[]}else f+=ch}
@@ -171,7 +171,7 @@ if(!ws){S.bm="Ce fichier ne contient pas de données de restauration situation-d
 const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});if(!rows.length||rows[0][0]!=="ARCHIGEST-DZ-V1")throw new Error("format");
 const o=JSON.parse(rows.slice(1).map(r=>r[0]).join("")),q=o&&o.project;
 if(!q||typeof q.name!=="string"||!Array.isArray(q.items)||!q.items.every(it=>it&&typeof it.d==="string"&&isFinite(it.q)&&isFinite(it.pu)&&Array.isArray(it.m)))throw new Error("contenu");
-q.id=Date.now()+Math.floor(Math.random()*1000);if(S.mode!="entreprise"){q.rs=1;let n="Devis restauré",k=1;while(S.projects.some(x=>x.grp===q.grp&&x.name===n))n="Devis restauré "+(++k);q.name=n}else if(S.projects.some(x=>x.name===q.name&&x.grp===q.grp))q.name+=" (restauré)";
+if(!q.id||S.projects.some(x=>x.id==q.id))q.id=Date.now()+Math.floor(Math.random()*1000);if(S.mode!="entreprise"){q.rs=1;let n="Devis restauré",k=1;while(S.projects.some(x=>x.grp===q.grp&&x.name===n))n="Devis restauré "+(++k);q.name=n}else if(S.projects.some(x=>x.name===q.name&&x.grp===q.grp))q.name+=" (restauré)";
 S.projects.push(q);S.cur=q.id;S.del=null;opn(q.id)}
 catch(x){S.bm="Fichier illisible ou endommagé : la restauration est impossible. Aucune donnée n’a été modifiée.";go()}};
 rd.onerror=()=>{S.bm="Lecture du fichier impossible.";go()};rd.readAsArrayBuffer(fl)}

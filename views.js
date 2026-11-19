@@ -354,8 +354,8 @@ S.cur=p.id;S.tab="devis";imp(inp)}
 function ndAsk(){S.nd=true;go()}
 function ndCancel(){S.nd=false;go()}
 function entSuite(){S.nd=false;const p=S.projects[0];if(!p||!p.hid)return;p.hid=false;if(p.val&&p.val[p.sit]&&p.sit<4)p.sit++;S.cur=p.id;DM="";save();go("attachement")}
-function dosSend(id){const p=S.projects.find(x=>x.id==id);if(!p)return;let ht=0;try{ht=calc(p).mi}catch(e){}
-const m="Dossier à préparer – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
+function dosSend(id){const p=S.projects.find(x=>x.id==id);if(!p)return;let ht=0;try{ht=calc(p).mi}catch(e){}const att=Array.from({length:Math.max(0,maxVal(p)-(p.ds||0))},(_,i)=>(p.ds||0)+1+i).join(", ");
+const m="Dossier à préparer – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+"\nAttachements : "+att+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
 p.sent=Date.now();save();licCnt("envoi-dossier","Envoi du dossier");DM="";
 const a=document.createElement("a");a.href="https://wa.me/"+WAN+"?text="+encodeURIComponent(m);a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();go()}
 /* dossier livré : l'écran redevient vide, le projet reste caché ; l'OK de ce dossier ne sert plus ensuite */
@@ -370,7 +370,7 @@ S.tab="projets";DM="";S.bm="";
 if(!ENT()){S.bm="Lien pour le mode Entreprise.";return true}
 const p=S.projects.find(x=>String(x.id)===m[1]);const k=m[2]?+m[2]:(p?(p.hid?(p.dn||0):(p.dn||0)+1):0),R=m[1]+"-"+k;
 if(!p)S.bm="Projet introuvable sur cet appareil.";
-else if(!dosCheck(m[1],m[3]))S.bm="Lien incorrect.";
+else if(!dosCheck(R,m[3]))S.bm="Lien incorrect.";
 else if(k===(p.dn||0)+1&&!p.hid){p.dos={t:Date.now()};S.cur=p.id;save();licCnt("dossier-ok","Dossier prêt");DM="⏳ Téléchargement…";dosAuto(p.id,k)}
 else if(k===p.dn&&p.hid){p.dos={t:Date.now()};S.cur=p.id;save();DM="⏳ Téléchargement…";dosAuto(p.id,k)}
 else S.bm=k<(p.dn||0)+1?"Lien déjà utilisé.":"Lien incorrect.";

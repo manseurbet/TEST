@@ -82,4 +82,4 @@ if(!LIC.ts)return{k:"none",wm:true};const left=LIC_TRIAL-Math.floor((now-LIC.ts)
 /* ===== Dossier (mode Entreprise) : l'OK est lié à la référence du projet, distinct des licences (autre empreinte) ===== */
 const dosHash=id=>h53(LIC_SECRET+"|DOSSIER|"+id).toString(36).toUpperCase().padStart(11,"0").slice(0,8);
 const dosCode=id=>{const c=dosHash(id);return c.slice(0,4)+"-"+c.slice(4)};
-const dosCheck=(id,code)=>{const c=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");return/^\d+$/.test(String(id))&&c.length==8&&c===dosHash(id)};
+const dosCheck=(id,code)=>{const c=String(code||"").toUpperCase().replace(/[^A-Z0-9]/g,"");return/^[0-9]+(-[0-9]+)?$/.test(String(id))&&c.length==8&&c===dosHash(id)};

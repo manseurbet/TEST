@@ -279,7 +279,7 @@ return selS(p,part=="s"?"Situation":"Décompte")+gnav(part)+(part=="s"?c2:c1)+`<
    AFFICHAGE — table des pages (VW) et render()
    ================================================================ */
 const VW={recapa:vRecA,recaps:vRecS,recapd:vRecD,recapg:vRecG,devis:vDevis,infos:vInfos,attachement:vAtt,decompte:vDec,situation:vSit,avenants:vAv,dgd:vDgd};
-function render(){const p=P();if(S.mode=="entreprise"&&!["projets","devis","attachement","infos"].includes(S.tab))S.tab="projets";if(!VW[S.tab]&&S.tab!="projets"&&S.tab!="ouvrir")S.tab="projets";if(LT!==null&&S.tab!==LT){LA=false;LM="";LG=""}LT=S.tab;const lk=S.mode!="entreprise"&&licSt().k=="fin";
+function render(){const p=P();if(S.mode=="entreprise"&&!["projets","devis","attachement","infos","avent"].includes(S.tab))S.tab="projets";if(!VW[S.tab]&&S.tab!="projets"&&S.tab!="ouvrir")S.tab="projets";if(LT!==null&&S.tab!==LT){LA=false;LM="";LG=""}LT=S.tab;const lk=S.mode!="entreprise"&&licSt().k=="fin";
 $("#pn").textContent=lk?"":p?(p.grp&&S.mode!="entreprise"?p.grp+" › ":"")+p.name:"";
 $("#nav").style.display=S.mode=="entreprise"?"none":"";$("#nav").innerHTML=S.mode=="entreprise"?"":TABS.map(([k,i,l])=>`<button class="${S.tab==k||(k=="projets"&&(S.tab=="infos"||S.tab=="ouvrir"))?"on":""}" ${lk||(k!="projets"&&!p)?"disabled":""} onclick="go('${k}')"><span>${i}</span>${l}</button>`).join("");
 $("#v").innerHTML=(lk?licW(""):S.tab=="ouvrir"?vOuvrir():S.tab=="projets"||!p?vProj():VW[S.tab](p))+CPY;{const ap=document.getElementById("apropos");if(ap)ap.hidden=S.tab!="projets"}document.body.classList.toggle("wm",S.mode!="entreprise"&&licSt().wm);document.body.classList.toggle("noprt",S.mode=="entreprise"&&S.tab!="attachement")}
@@ -340,10 +340,10 @@ const entNext=p=>ENT()&&p.items.length&&!(typeof CAND!=="undefined"&&CAND.length
 const ENT_KEYS=["ent","adr","rc","nif","nis","art","rib","bq","tva"];
 const dosRef=p=>p.id+"-"+((p.dn||0)+1);
 /* accueil Entreprise : « Importer devis » (aucun projet), « Mon projet » (en cours) ou, après un dossier livré, « Attachement suivant » (le projet et son cumul restent cachés dans l'appareil) */
-function entHome(){const p=S.projects[0],m=DM?`<p style="color:#070;font-weight:700;margin:0">${esc(DM)}</p>`:"",bm=S.bm&&!/^✅/.test(S.bm)?`<p class="bad" style="margin:0">${esc(S.bm)}</p>`:"";let h;
+function entHome(){const p=S.projects[0];if(p&&S.avPrev!=null&&!S.av)avDrop(p);const m=DM?`<p style="color:#070;font-weight:700;margin:0">${esc(DM)}</p>`:"",bm=S.bm&&!/^✅/.test(S.bm)?`<p class="bad" style="margin:0">${esc(S.bm)}</p>`:"";let h;
 const imp=(t,c)=>`<label class="btn${c?" pri":""}" style="font-size:18px;padding:16px;display:block">${t}<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="entImp(this)"></label>`;
 if(p&&p.hid&&S.av)h=avChoice(p);
-else if(p&&p.hid){const more=p.sit<4||!(p.val&&p.val[p.sit]);h=avPend(p)+avBtn(p)+(more?`<button class="pri" style="font-size:18px;padding:16px" onclick="entSuite()">➕ Attachement suivant</button>`:"")+(S.nd?imp("⚠️ Confirmer nouveau projet",1)+`<button style="padding:8px" onclick="ndCancel()">✕ Annuler</button>`:`<button${!more?` class="pri"`:""} style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau devis</button>`)+`<button style="font-size:13px;padding:8px" onclick="dosRe()">↻ Pas reçu ? Télécharger encore</button>`}
+else if(p&&p.hid){const more=p.sit<4||!(p.val&&p.val[p.sit]);h=avPend(p)+(more?`<button class="pri" style="font-size:18px;padding:16px" onclick="entSuite()">➕ Attachement suivant</button>`:"")+avBtn(p)+(S.nd?imp("⚠️ Confirmer nouveau projet",1)+`<button style="padding:8px" onclick="ndCancel()">✕ Annuler</button>`:`<button${!more?` class="pri"`:""} style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau devis</button>`)+`<button style="font-size:13px;padding:8px" onclick="dosRe()">↻ Pas reçu ? Télécharger encore</button>`}
 else if(!p||!p.items.length)h=imp("📄 Importer le devis Excel",1);
 else h=`<button class="pri" style="font-size:18px;padding:16px" onclick="opn(${p.id})">📁 Mon projet</button>${p.sent?`<p style="margin:0;font-size:13px">✅ Envoyé · dossier sous 24 h</p>`:""}`;
 return`<div class="card" style="text-align:center"><div style="font-size:42px">🏗️</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">${m}${h}</div>${bm}</div>`}
@@ -356,7 +356,7 @@ function ndAsk(){S.nd=true;go()}
 function ndCancel(){S.nd=false;go()}
 function entSuite(){S.nd=false;const p=S.projects[0];if(!p||!p.hid)return;p.hid=false;if(p.val&&p.val[p.sit]&&p.sit<4)p.sit++;S.cur=p.id;DM="";save();go("attachement")}
 function dosSend(id){const p=S.projects.find(x=>x.id==id);if(!p)return;let ht=0;try{ht=calc(p).mi}catch(e){}const att=Array.from({length:Math.max(0,maxVal(p)-(p.ds||0))},(_,i)=>(p.ds||0)+1+i).join(", ");
-const m="Dossier à préparer – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+(att?"\nAttachements : "+att:"")+(p.avReq?"\nAvenant : "+avS(p.avReq):"")+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
+const m="Dossier à préparer – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+(att?"\nAttachements : "+att:"")+(p.avReq?"\nAvenant : "+avS(p.avReq)+(cpL(p,p.avReq).length?"\nTravaux complémentaires : "+cpL(p,p.avReq).length+" article(s) · HT "+fmt(cpT(p,p.avReq))+" DA":""):"")+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
 p.sent=Date.now();save();licCnt("envoi-dossier","Envoi du dossier");DM="";
 const a=document.createElement("a");a.href="https://wa.me/"+WAN+"?text="+encodeURIComponent(m);a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();go()}
 /* dossier livré : l'écran redevient vide, le projet reste caché ; l'OK de ce dossier ne sert plus ensuite */
@@ -384,8 +384,15 @@ function avPend(p){return p.avReq?`<p style="margin:0;font-size:13px">✅ ${avL(
 function avChoice(p){const k=(p.avs||0)+1;return(k<=4?`<button class="pri" style="font-size:18px;padding:16px" onclick="avAsk(${p.id},${k})">${avL(k)}</button>`:"")+`<button${k>4?` class="pri"`:""} style="font-size:18px;padding:16px" onclick="avAsk(${p.id},5)">${avL(5)}</button><button style="padding:8px" onclick="avCancel()">✕ Annuler</button>`}
 function avOpen(){S.av=true;S.nd=false;go()}
 function avCancel(){S.av=false;go()}
-function avAsk(id,n){const p=S.projects.find(x=>x.id==id);if(!p||p.clos)return;S.av=false;p.avReq=n;p.avn=n;if(n==5)p.done=true;licCnt("avenant-demande","Demande d'avenant");save();dosSend(id)}
-function avCancelReq(id){const p=S.projects.find(x=>x.id==id);if(!p)return;delete p.avReq;p.sent=0;save();go()}
+function avAsk(id,n){const p=S.projects.find(x=>x.id==id);if(!p||p.clos)return;S.av=false;S.avPrev=p.avn||1;p.avn=n;S.cur=p.id;S.msg="";CM=false;CAND=[];S.tab="avent";go()}
+function avCancelReq(id){const p=S.projects.find(x=>x.id==id);if(!p)return;const n=p.avReq;delete p.avReq;if(n&&p.cp)delete p.cp[n];p.sent=0;save();go()}
+/* écran de l'avenant (Entreprise) : import facultatif du devis des travaux complémentaires (même import que le mode Bureau), sans modification possible */
+function vAvEnt(p){const n=p.avn||1,cc=cpL(p,n),CT=cpT(p,n);
+return(CM?chkBox():"")+`<div class="card"><b>${avL(n)}</b><div style="color:var(--mut);font-size:13px;margin:4px 0 8px">Travaux complémentaires (facultatif)</div><div class="row" style="margin:8px 0;align-items:center">${IMPORT_FILE_ON?`<label class="btn pri">📄 Importer devis complémentaires<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="imp(this,1)"></label>`:""}</div>${S.msg?`<p class="${/^\d/.test(S.msg)?"":"bad"}" style="font-weight:600">${esc(S.msg)}</p>`:""}${cc.length?`<div class="sc"><table><tr><th class="s1">Code</th><th class="s2">Désignation</th><th>U</th><th>Quantité</th><th>P-U</th><th class="r">Montant</th></tr>${cc.map(c=>`<tr><td>${esc(c.n||"")}</td><td class="d">${esc(c.d)}</td><td>${esc(c.u)}</td><td class="r">${tz(c,c.q)}</td><td class="r">${fmt(c.pu)}</td><td class="r">${fmt(cpM(c))}</td></tr>`).join("")}<tr class="tot"><td colspan="5">Total HT (DA)</td><td class="r">${fmt(CT)}</td></tr></table></div>`:""}</div><div class="card np"><div class="row" style="gap:10px;flex-wrap:nowrap"><button style="flex:1;font-size:18px;padding:14px" onclick="avDraftCancel(${p.id})">Annuler</button>${CAND.length?"":`<button class="pri" style="flex:2;font-size:18px;padding:14px" onclick="avSend(${p.id})">📤 Envoyer</button>`}</div></div>`}
+VW.avent=vAvEnt;
+function avSend(id){const p=S.projects.find(x=>x.id==id);if(!p||p.clos||(typeof CAND!=="undefined"&&CAND.length))return;const n=p.avn||1;p.avReq=n;if(n==5)p.done=true;S.msg="";S.avPrev=null;S.av=false;S.tab="projets";licCnt("avenant-demande","Demande d'avenant");save();dosSend(id)}
+function avDrop(p){const n=p.avn||1;if(p.cp&&p.cp[n]&&!p.avReq&&n>(p.avs||0))delete p.cp[n];p.avn=S.avPrev||1;S.avPrev=null;CM=false;CAND=[];S.msg=""}
+function avDraftCancel(id){const p=S.projects.find(x=>x.id==id);if(p)avDrop(p);S.av=false;S.tab="projets";save();go("projets")}
 /* Annuler : efface le devis qui vient d'être importé (avant tout attachement validé) et revient à « Importer devis » */
 function entAnnuler(){const p=S.projects[0];if(!p||p.hid||p.dn||p.sent||maxVal(p))return;S.projects=[];S.cur=null;S.entUsed=false;CAND=[];S.msg="";S.nd=false;S.av=false;DM="";S.bm="";S.tab="projets";save();go("projets")}
 (()=>{const st=document.createElement("style");st.textContent='@media print{body.noprt>*{display:none!important}body.noprt::before{content:"Impression : attachement seulement";display:block;text-align:center;font-size:18px;padding:40px}}';document.head.appendChild(st)})();

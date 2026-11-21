@@ -139,7 +139,7 @@ files.push(["xl/_rels/workbook.xml.rels",hd+`<Relationships xmlns="http://schema
 files.push(["xl/styles.xml",sb.xml()]);sx.forEach((x,i)=>files.push([`xl/worksheets/sheet${i+1}.xml`,x]));return files}
 function exportX(id,libre,kind){if(!EXPORT_ON)return;if(!libre&&licSt().k!="actif"){xmShow(id);return}const p0=S.projects.find(x=>x.id==id);if(!p0)return;
 const sv={cur:S.cur,tab:S.tab,msg:S.msg,pz:S.pz,cand:CAND,sit:p0.sit,avn:p0.avn,sd:p0.sd};let fn="",files=null;
-try{S.cur=id;S.msg="";S.pz=false;CAND=[];const p=p0,sh=[],used=new Set(),wm=licSt().wm,dt=new Date().toLocaleDateString("fr-FR"),note=(wm?"VERSION D’ESSAI – ":"")+"Fichier en lecture seule – exporté de situation-dgd.com le "+dt+" – projet : "+p.name;
+try{S.cur=id;S.msg="";S.pz=false;CAND=[];const p=p0,sh=[],used=new Set(),wm=licSt().wm&&!libre,dt=new Date().toLocaleDateString("fr-FR"),note=(wm?"VERSION D’ESSAI – ":"")+"Fichier en lecture seule – exporté de situation-dgd.com le "+dt+" – projet : "+p.name;
 const add=(nm,pg,nt,wf)=>sh.push({nm:shName(nm,used),m:finSheet(pg,nt,wf,wm)});
 const cards=html=>{const d=document.createElement("div");d.innerHTML=String(html).replace(/<br\s*\/?>/gi,"\u2028");const o=[];[...d.children].forEach(c=>(c.classList.contains("land")?[...c.children]:[c]).forEach(x=>{if(!x.matches(".np")&&x.querySelector("table"))o.push(x)}));return o};
 const merge=cs=>{const A=[],MG=[],BR=[];cs.forEach((c,i)=>{const g=pageRows(c),o=A.length;if(i)BR.push(o);g.MG.forEach(m=>MG.push({r1:m.r1+o,c1:m.c1,r2:m.r2+o,c2:m.c2}));g.BR.forEach(b=>BR.push(b+o));g.A.forEach(r=>A.push(r))});return{A,MG,BR}};

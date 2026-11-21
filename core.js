@@ -32,7 +32,7 @@ if(!S||!S.projects)S={projects:[],cur:null,tab:"projets",del:null};
 S.tab="projets";S.cur=null;S.del=null;S.back=null;
 const save=()=>{try{localStorage.setItem("archigest_dz",JSON.stringify(S));OK=true}catch(e){OK=false}};
 const P=()=>S.projects.find(p=>p.id===S.cur);
-function mk(name){return{id:Date.now(),name,moa:"",ent:"",gar:"caution",contrat:"",objet:"",montant:0,doit:"",adr:"",rc:"",nif:"",nis:"",art:"",rib:"",bq:"",tva:19,ret:5,items:[],adj:{},sit:1}}
+function mk(name){return{id:Date.now(),name,moa:"",ent:"",gar:"caution",contrat:"",objet:"",montant:0,doit:"",adr:"",rc:"",nif:"",nis:"",art:"",rib:"",bq:"",tva:19,ret:5,items:[],adj:{},done:true,sit:1}}
 function setMode(m){S.mode=m;S.del=null;go()}
 function np(){npj()}
 function dp(){if(S.del==S.cur){S.projects=S.projects.filter(x=>x.id!=S.cur);S.cur=S.projects[0]?S.projects[0].id:null;S.del=null}else S.del=S.cur;go()}

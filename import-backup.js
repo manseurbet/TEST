@@ -137,7 +137,7 @@ files.push(["_rels/.rels",hd+`<Relationships xmlns="http://schemas.openxmlformat
 files.push(["xl/workbook.xml",hd+`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${R}"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${sh.map((s,i)=>`<sheet name="${xa(s.nm)}" sheetId="${i+1}"${s.hid?' state="veryHidden"':""} r:id="rId${i+1}"/>`).join("")}</sheets></workbook>`]);
 files.push(["xl/_rels/workbook.xml.rels",hd+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sh.map((s,i)=>`<Relationship Id="rId${i+1}" Type="${R}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")}<Relationship Id="rId${n+1}" Type="${R}/styles" Target="styles.xml"/></Relationships>`]);
 files.push(["xl/styles.xml",sb.xml()]);sx.forEach((x,i)=>files.push([`xl/worksheets/sheet${i+1}.xml`,x]));return files}
-function exportX(id,libre){if(!EXPORT_ON)return;if(!libre&&licSt().k!="actif"){xmShow(id);return}const p0=S.projects.find(x=>x.id==id);if(!p0)return;
+function exportX(id,libre,kind){if(!EXPORT_ON)return;if(!libre&&licSt().k!="actif"){xmShow(id);return}const p0=S.projects.find(x=>x.id==id);if(!p0)return;
 const sv={cur:S.cur,tab:S.tab,msg:S.msg,pz:S.pz,cand:CAND,sit:p0.sit,avn:p0.avn,sd:p0.sd};let fn="",files=null;
 try{S.cur=id;S.msg="";S.pz=false;CAND=[];const p=p0,sh=[],used=new Set(),wm=licSt().wm,dt=new Date().toLocaleDateString("fr-FR"),note=(wm?"VERSION D’ESSAI – ":"")+"Fichier en lecture seule – exporté de situation-dgd.com le "+dt+" – projet : "+p.name;
 const add=(nm,pg,nt,wf)=>sh.push({nm:shName(nm,used),m:finSheet(pg,nt,wf,wm)});
@@ -145,15 +145,15 @@ const cards=html=>{const d=document.createElement("div");d.innerHTML=String(html
 const merge=cs=>{const A=[],MG=[],BR=[];cs.forEach((c,i)=>{const g=pageRows(c),o=A.length;if(i)BR.push(o);g.MG.forEach(m=>MG.push({r1:m.r1+o,c1:m.c1,r2:m.r2+o,c2:m.c2}));g.BR.forEach(b=>BR.push(b+o));g.A.forEach(r=>A.push(r))});return{A,MG,BR}};
 const put=(names,html)=>{const cs=cards(html);if(!cs.length)return;if(cs.length===names.length)cs.forEach((c,i)=>add(names[i],pageRows(c),note));else add(names[0],merge(cs),note)};
 const pc=(t,b)=>[{v:t,s:b?"p+b":"p",k:"para",l:t.length}];
-put(["Devis"],VW.devis(p));
+if(kind!="att")put(["Devis"],VW.devis(p));
 const hasD=k=>(p.val&&p.val[k])||p.items.some(it=>(it.m[k-1]||0)>0)||k==sv.sit;
 for(let k=1;k<=4;k++)if(hasD(k)){p.sit=k;put(["Attachement "+k],VW.attachement(p));put(["Décompte "+k,"Récap décompte "+k],VW.decompte(p));put(["Situation "+k],VW.situation(p))}
 p.sit=sv.sit;
-if(p.items.some(it=>it.m.some(x=>x>0))){p.sd=true;put(["Situation définitive"],VW.situation(p));p.sd=sv.sd}
+if(kind!="att"&&p.items.some(it=>it.m.some(x=>x>0))){p.sd=true;put(["Situation définitive"],VW.situation(p));p.sd=sv.sd}
 const av=new Set([sv.avn||1]);Object.keys(p.cp||{}).forEach(k=>{if(p.cp[k].length)av.add(+k)});p.items.forEach(it=>(it.av||[]).forEach((x,j)=>{if(x)av.add(j+1)}));
-[...av].sort((a,b)=>a-b).forEach(n=>{p.avn=n;put(["Avenant "+n+" - Supplémentaires","Avenant "+n+" - Diminution","Avenant "+n+" - Complémentaires","Avenant "+n+" - Récapitulatif","Avenant "+n+" - Nouveau devis"],VW.avenants(p))});
+if(kind!="att")[...av].sort((a,b)=>a-b).forEach(n=>{p.avn=n;put(["Avenant "+n+" - Supplémentaires","Avenant "+n+" - Diminution","Avenant "+n+" - Complémentaires","Avenant "+n+" - Récapitulatif","Avenant "+n+" - Nouveau devis"],VW.avenants(p))});
 p.avn=sv.avn;
-put(["DGD","Récap DGD"],VW.dgd(p));
+if(kind!="att")put(["DGD","Récap DGD"],VW.dgd(p));
 /* données de restauration (feuille très cachée) */
 const js=JSON.stringify({v:1,app:"archigest-dz",at:new Date().toISOString(),project:p}),R=[[{v:"ARCHIGEST-DZ-V1"}]];for(let i=0;i<js.length;i+=30000)R.push([{v:js.slice(i,i+30000)}]);
 sh.push({nm:"_archigest",hid:1,m:{A:R,MG:[],BR:[],W:[20],H:[],land:false}});

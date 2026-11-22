@@ -170,7 +170,7 @@ function cpH(cc,i,w){const c=cc[i];if(c.pre&&c.pre.length)return c.pre.map(h=>h.
 function cpA(){const p=P(),n=p.avn||1;p.cp=p.cp||{};(p.cp[n]=p.cp[n]||[]).push({n:"",d:"",u:"m²",q:0,pu:0});go()}
 function cpS(i,k,v){const p=P();cpL(p,p.avn||1)[i][k]=v;go()}
 function cpD(i){const p=P();cpL(p,p.avn||1).splice(i,1);go()}
-function vAv(p){const r=calc(p),n=p.avn||1,ln=Math.max(0,...p.items.flatMap(it=>it.av.map((x,k)=>x?k+1:0))),au=n==Math.max(n,ln),R6=x=>Math.round(x*1e6)/1e6;
+function vAv(p){if((p.avn||1)==5&&!window.__XPORT)return selA(p)+'<div class="card"><b>Avenant de clôture</b><p>Page en construction.</p></div>';const r=calc(p),n=p.avn||1,ln=Math.max(0,...p.items.flatMap(it=>it.av.map((x,k)=>x?k+1:0))),au=n==Math.max(n,ln),R6=x=>Math.round(x*1e6)/1e6;
 let prT=0;const L=p.items.map((it,i)=>{const t=x=>tz(it,x),pr=t(t(it.q)+it.av.slice(0,n-1).reduce((a,b)=>a+t(b),0)),nq=n==5?t(it.tot):t(au?it.qa:pr+t(it.av[n-1]||0));prT=ta(prT+Mt(it,pr));return{it,i,d:t(nq-pr),v:ta(Mt(it,nq)-Mt(it,pr)),pr,nq}});
 const pg=sg=>{const ls=L.filter(x=>sg*x.d>1e-9),sl=lot=>ls.filter(y=>y.it.lot===lot).reduce((a,y)=>ta(a+sg*y.v),0);let T=0;
 const rows=ls.map((x,j)=>{const it=x.it,q=sg*x.d,m=sg*x.v,pv=ls[j-1],nx=ls[j+1];T=ta(T+m);
@@ -183,12 +183,7 @@ nv=ta(prT+cpP(p,n)+A.T+cpT(p,n)-B.T),Rc=(l,v,c)=>`<tr class="${c||""}"><td>${l}<
 const cc=cpL(p,n),CT=cpT(p,n),
 ccard=(CM?chkBox():"")+`<div class="card np"><b>Travaux complémentaires</b><div class="row" style="margin:8px 0;align-items:center">${IMPORT_FILE_ON?`<label class="btn pri">📄 Importer devis complémentaires<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="imp(this,1)"></label>`:""}<span style="font-size:12px;color:var(--mut)">Fichier Excel (.xlsx, .xls) ou CSV</span></div>${S.msg?`<p class="${/^\d/.test(S.msg)?"":"bad"}" style="font-weight:600">${esc(S.msg)}</p>`:""}<div class="sc"><table><tr><th class="s1">Code</th><th class="s2">Désignation</th><th>U</th><th>Quantité</th><th>P-U</th><th class="r">Montant</th><th></th></tr>${cc.map((c,i)=>cpH(cc,i,7)+`<tr><td><input value="${esc(c.n||"")}" style="min-width:64px" onchange="cpS(${i},'n',this.value)"></td><td class="d"><input value="${esc(c.d)}" onchange="cpS(${i},'d',this.value)"></td><td><input value="${esc(c.u)}" style="min-width:48px" onchange="cpS(${i},'u',this.value)"></td><td><input type="number" step="any" value="${qv(c,c.q)}" onchange="cpS(${i},'q',+this.value)"></td><td><input type="number" step="any" value="${ta(c.pu).toFixed(2)}" onchange="cpS(${i},'pu',+this.value)"></td><td class="r">${fmt(cpM(c))}</td><td><button onclick="cpD(${i})">×</button></td></tr>`).join("")}<tr class="tot"><td colspan="5">Total HT (DA)</td><td class="r">${fmt(CT)}</td><td></td></tr></table></div><div style="margin-top:8px"><button onclick="cpA()">+ Ligne</button></div></div>`,
 cpg=`<div class="card sc pgb">${hh("TRAVAUX COMPLÉMENTAIRES")}<table style="margin-top:6px">${th}${cc.map((c,i)=>cpH(cc,i,6)+`<tr><td class="s1">${esc(c.n||"")}</td><td class="ds s2"><div class="dz">${esc(c.d)}</div></td><td>${esc(c.u)}</td>${Q(c,c.q)}<td class="r">${fmt(c.pu)}</td><td class="r">${fp(cpM(c))}</td></tr>`).join("")||`<tr><td colspan="6"><i>Aucun article.</i></td></tr>`}${F("TOTAL EN HT",CT)}${F("TVA "+p.tva+" %",TVx(CT,p.tva))}${F("TOTAL EN TTC",TT(CT,p.tva))}</table><p>Arrêté le montant des travaux complémentaires à la somme de (en TTC) :<br><b>${lettres(TT(CT,p.tva),1)}</b></p></div>`;
-const detC=n==5?(()=>{const T=[0,0,0,0];const CP=Object.keys(p.cp||{}).filter(k=>+k<5).sort().flatMap(k=>p.cp[k]);
-const rowsD=L.map(x=>{const it=x.it,a=x.pr,b=x.nq,qs=[a,b,Math.max(ta(b-a),0),Math.max(ta(a-b),0)],v=[Mt(it,a),Mt(it,b),Math.max(ta(Mt(it,b)-Mt(it,a)),0),Math.max(ta(Mt(it,a)-Mt(it,b)),0)];v.forEach((y,j)=>T[j]=ta(T[j]+y));
-return`<tr><td class="s1">${esc(it.n||"")}</td><td class="ds s2"><div class="dz">${esc(it.d)}</div></td><td>${esc(it.u)}</td>${qs.map(y=>`${Q(it,y)}`).join("")}<td class="r">${fmt(it.pu)}</td>${v.map(y=>`<td class="r">${fp(y)}</td>`).join("")}</tr>`}).join("");
-const crowsD=CP.length?`<tr><td colspan="12"><b>TRAVAUX COMPLÉMENTAIRES</b></td></tr>`+CP.map(c=>{const v=[cpM(c),cpM(c),0,0];v.forEach((y,j)=>T[j]=ta(T[j]+y));return`<tr><td class="s1">${esc(c.n||"")}</td><td class="ds s2"><div class="dz">${esc(c.d)}</div></td><td>${esc(c.u)}</td>${[c.q,c.q,0,0].map(y=>`${Q(c,y)}`).join("")}<td class="r">${fmt(c.pu)}</td>${v.map(y=>`<td class="r">${fp(y)}</td>`).join("")}</tr>`}).join(""):"";
-const g=G4(T,p.tva),FF=(l,a)=>`<tr class="tot"><td colspan="8">${l}</td>${a.map((x,j)=>`<td class="r">${j>1&&Math.abs(x)<0.01?"":fp(x)}</td>`).join("")}</tr>`;
-return`<div class="card sc pgb">${hdr(p)}${PJ(p)}<b>${AVL(n)} : NOUVEAU MARCHÉ</b><table style="margin-top:6px"><tr><th rowspan="2" class="s1">N°</th><th rowspan="2" class="s2">Désignation</th><th rowspan="2">U</th><th colspan="4" style="text-align:center">Quantité</th><th rowspan="2" class="r">P.U.</th><th colspan="4" style="text-align:center">Montant</th></tr><tr><th class="r">NOUVEAU MARCHÉ</th><th class="r">Réalisé</th><th class="r">Plus-value</th><th class="r">Moins-value</th><th class="r">NOUVEAU MARCHÉ</th><th class="r">Réalisé</th><th class="r">Plus-value</th><th class="r">Moins-value</th></tr>${rowsD}${crowsD}${FF("TOTAL EN HT",T)}${FF("TVA "+p.tva+" %",g[1])}${FF("TOTAL EN TTC",g[2])}</table></div>`;})():"";
+const detC=window.__XPORT?"":avDgdT(p,n);
 return selA(p)+`<div class="card np"><label style="flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--tx)"><input type="checkbox" style="width:auto" ${p.done?"checked":""} onchange="set('done',this.checked)"> Travaux terminés</label><div style="font-size:12px;color:var(--mut);margin-top:4px">Cochée : les quantités non réalisées passent en moins-value (page « Travaux en Diminution »).</div></div>${ccard}
 ${detC}<div class="card sc">${hh("TRAVAUX SUPPLÉMENTAIRES")}<table style="margin-top:6px">${th}${A.rows}${F("TOTAL EN HT",A.T)}${F("TVA "+p.tva+" %",TVx(A.T,p.tva))}${F("TOTAL EN TTC",TT(A.T,p.tva))}</table><p>Arrêté le montant des travaux supplémentaires à la somme de (en TTC) :<br><b>${lettres(TT(A.T,p.tva),1)}</b></p></div>
 <div class="card sc pgb">${hh("TRAVAUX EN DIMINUTION")}<table style="margin-top:6px">${th}${B.rows}${F("TOTAL EN HT",B.T)}${F("TVA "+p.tva+" %",TVx(B.T,p.tva))}${F("TOTAL EN TTC",TT(B.T,p.tva))}</table><p>Arrêté le montant des travaux en diminution à la somme de (en TTC) :<br><b>${lettres(TT(B.T,p.tva),1)}</b></p></div>
@@ -286,7 +281,7 @@ return selS(p,part=="s"?"Situation":"Décompte")+gnav(part)+(part=="s"?c2:c1)+`<
 /* ================================================================
    AFFICHAGE — table des pages (VW) et render()
    ================================================================ */
-const VW={recapa:vRecA,recaps:vRecS,recapd:vRecD,recapg:vRecG,devis:vDevis,infos:vInfos,attachement:vAtt,decompte:vDec,situation:vSit,avenants:vAv,dgd:vDgd};
+const VW={recapa:vRecA,recaps:vRecS,recapd:vRecD,recapg:vRecG,devis:vDevis,infos:vInfos,attachement:vAtt,decompte:vDec,situation:vSit,avenants:vAv,avdgd:p=>avDgdT(p,p.avn||1),dgd:vDgd};
 function render(){const p=P();if(S.mode=="entreprise"&&!["projets","devis","attachement","infos","avent"].includes(S.tab))S.tab="projets";if(!VW[S.tab]&&S.tab!="projets"&&S.tab!="ouvrir")S.tab="projets";if(LT!==null&&S.tab!==LT){LA=false;LM="";LG=""}LT=S.tab;const lk=S.mode!="entreprise"&&licSt().k=="fin";
 $("#pn").textContent=lk?"":p?(p.grp&&S.mode!="entreprise"?p.grp+" › ":"")+p.name:"";
 $("#nav").style.display=S.mode=="entreprise"?"none":"";$("#nav").innerHTML=S.mode=="entreprise"?"":TABS.map(([k,i,l])=>`<button class="${S.tab==k||(k=="projets"&&(S.tab=="infos"||S.tab=="ouvrir"))?"on":""}" ${lk||(k!="projets"&&!p)?"disabled":""} onclick="go('${k}')"><span>${i}</span>${l}</button>`).join("");
@@ -415,3 +410,34 @@ function avDraftCancel(id){const p=S.projects.find(x=>x.id==id);if(p)avDrop(p);S
 /* Annuler : efface le devis qui vient d'être importé (avant tout attachement validé) et revient à « Importer devis » */
 function entAnnuler(){const p=S.projects[0];if(!p||p.hid||p.dn||p.sent||maxVal(p))return;S.projects=[];S.cur=null;S.entUsed=false;CAND=[];S.msg="";S.nd=false;S.av=false;DM="";S.bm="";S.tab="projets";save();go("projets")}
 (()=>{const st=document.createElement("style");st.textContent='@media print{body.noprt>*{display:none!important}body.noprt::before{content:"Impression : attachement seulement";display:block;text-align:center;font-size:18px;padding:40px}}';document.head.appendChild(st)})();
+
+/* ===== DGD par avenant (n°1, n°2) et DGD après l'avenant de clôture =====
+   Colonnes : marché (devis de cet avenant), précédent (devis avant cet avenant), réalisé (cumul), moins-value, plus-value.
+   Clôture : marché et précédent = nouveau devis, réalisé = cumul ; complémentaires des avenants précédents inclus. */
+function avDgdT(p,n){
+calc(p);
+const sumAv=(it,k)=>it.av.slice(0,k).reduce((a,b)=>a+b,0);
+const inMar=k=>n==5?+k<5:+k<=n, inPre=k=>n==5?+k<5:+k<n;
+const cpKeys=Object.keys(p.cp||{}).sort((a,b)=>a-b);
+const groups=[];
+p.items.forEach(it=>{const k=it.lot||"";let g=groups.find(x=>x.k===k);if(!g){g={k,rows:[]};groups.push(g)}g.rows.push(it)});
+const T=[0,0,0,0,0];
+const rowsHtml=g=>{const S=[0,0,0,0,0];
+const body=g.rows.map(it=>{const t=x=>tz(it,x);
+const mq=t(t(it.q)+sumAv(it,n==5?4:n)),pq=n==5?mq:t(t(it.q)+sumAv(it,n-1)),rq=it.tot,
+mvq=Math.max(t(mq-rq),0),pvq=Math.max(t(rq-mq),0);
+const am=Mt(it,mq),ap=Mt(it,pq),ar=Mt(it,rq),amv=Math.max(ta(am-ar),0),apv=Math.max(ta(ar-am),0);
+const v=[am,ap,ar,amv,apv];v.forEach((x,j)=>{S[j]=ta(S[j]+x);T[j]=ta(T[j]+x)});
+return`<tr><td class="s1">${esc(it.n||"")}</td><td class="ds s2"><div class="dz">${esc(it.d)}</div></td><td>${esc(it.u)}</td>${[mq,pq,rq,mvq,pvq].map(x=>Q(it,x)).join("")}<td class="r">${fmt(it.pu)}</td>${v.map(x=>`<td class="r">${fp(x)}</td>`).join("")}</tr>`}).join("");
+const head=g.k?`<tr><td colspan="14"><b>${esc(g.k)}</b></td></tr>`:"";
+const sub=g.k?`<tr class="tot"><td colspan="9">TOTAL ${esc(g.k)}</td>${S.map(x=>`<td class="r">${fp(x)}</td>`).join("")}</tr>`:"";
+return head+body+sub};
+const itemsHtml=groups.map(rowsHtml).join("");
+const cpRows=cpKeys.filter(k=>inMar(k)||inPre(k)).flatMap(k=>(p.cp[k]||[]).map(c=>{const m=inMar(k),pr=inPre(k),am=m?cpM(c):0,ap=pr?cpM(c):0,ar=m?cpM(c):0;
+const v=[am,ap,ar,0,0];v.forEach((x,j)=>T[j]=ta(T[j]+x));
+return`<tr><td class="s1">${esc(c.n||"")}</td><td class="ds s2"><div class="dz">${esc(c.d)}</div></td><td>${esc(c.u)}</td>${[m?c.q:0,pr?c.q:0,m?c.q:0,0,0].map(x=>Q(c,x)).join("")}<td class="r">${fmt(c.pu)}</td>${v.map(x=>`<td class="r">${fp(x)}</td>`).join("")}</tr>`})).join("");
+const cpHead=cpRows?`<tr><td colspan="14"><b>TRAVAUX COMPLÉMENTAIRES</b></td></tr>`:"";
+const mL=n==5?"NOUVEAU MARCHÉ":"Marché", pL=n==5?"Avant clôture":"Précédent";
+const FF=(l,a)=>`<tr class="tot"><td colspan="9">${l}</td>${a.map((x,j)=>`<td class="r">${j>2&&Math.abs(x)<0.01?"":fp(x)}</td>`).join("")}</tr>`;
+const tv=T.map(x=>TVx(x,p.tva)),tt=T.map(x=>TT(x,p.tva));
+return`<div class="card sc pgb">${hdr(p)}${PJ(p)}<b>${AVL(n)} : DÉCOMPTE GÉNÉRAL DÉFINITIF</b><table style="margin-top:6px"><tr><th rowspan="2" class="s1">N°</th><th rowspan="2" class="s2">Désignation</th><th rowspan="2">U</th><th colspan="5" style="text-align:center">Quantité</th><th rowspan="2" class="r">P.U.</th><th colspan="5" style="text-align:center">Montant</th></tr><tr><th class="r">${mL}</th><th class="r">${pL}</th><th class="r">Réalisé</th><th class="r">Moins-value</th><th class="r">Plus-value</th><th class="r">${mL}</th><th class="r">${pL}</th><th class="r">Réalisé</th><th class="r">Moins-value</th><th class="r">Plus-value</th></tr>${itemsHtml}${cpHead}${cpRows}${FF("TOTAL EN HT",T)}${FF("TVA "+p.tva+" %",tv)}${FF("TOTAL EN TTC",tt)}</table><p>Arrêté le montant du présent DGD à la somme de (en TTC) :<br><b>${lettres(tt[2],1)}</b></p></div>`}

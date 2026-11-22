@@ -333,7 +333,7 @@ licLien();addEventListener("hashchange",()=>{if(licLien())go()});
    ================================================================ */
 const WAN="213556751401";
 /* DOSSIER_AUTO=true : « Envoyer » télécharge le dossier tout de suite (sans OK) ; false : il faut le lien d'OK de l'architecte. DOSSIER_NOTIF=true : WhatsApp s'ouvre ensuite avec le message pour vous prévenir. */
-const DOSSIER_AUTO=true,DOSSIER_NOTIF=true;let DM="";
+const DOSSIER_AUTO=true,DOSSIER_NOTIF=false;let DM="";
 const ENT=()=>S.mode=="entreprise";
 function envBtn(p){return`<button class="pri" onclick="dosSend(${p.id})">📤 Envoyer</button>${p.sent?`<span style="font-size:13px;align-self:center">✅ Envoyé · dossier sous 24 h</span>`:""}`}
 function PB(c){if(!ENT())return`<button${c?` class="${c}"`:""} onclick="fin('print')">🖨️ Imprimer</button>`;const p=P();return entSend(p)}

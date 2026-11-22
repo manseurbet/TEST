@@ -331,7 +331,9 @@ licLien();addEventListener("hashchange",()=>{if(licLien())go()});
    MODE ENTREPRISE — « Envoyer » → WhatsApp de l'entrepreneur (dossier à préparer) ; l'architecte corrige sur la page imprimée, puis renvoie le OK → « Mon dossier » (Excel)
    Imprimer reste disponible seulement sur l'attachement (à faire signer avec le maître d'œuvre).
    ================================================================ */
-const WAN="213556751401";let DM="";
+const WAN="213556751401";
+/* DOSSIER_AUTO=true : « Envoyer » télécharge le dossier tout de suite (sans OK) ; false : il faut le lien d'OK de l'architecte. DOSSIER_NOTIF=true : WhatsApp s'ouvre ensuite avec le message pour vous prévenir. */
+const DOSSIER_AUTO=true,DOSSIER_NOTIF=true;let DM="";
 const ENT=()=>S.mode=="entreprise";
 function envBtn(p){return`<button class="pri" onclick="dosSend(${p.id})">📤 Envoyer</button>${p.sent?`<span style="font-size:13px;align-self:center">✅ Envoyé · dossier sous 24 h</span>`:""}`}
 function PB(c){if(!ENT())return`<button${c?` class="${c}"`:""} onclick="fin('print')">🖨️ Imprimer</button>`;const p=P();return entSend(p)}
@@ -357,9 +359,17 @@ function ndAsk(){S.nd=true;go()}
 function ndCancel(){S.nd=false;go()}
 function entSuite(){S.nd=false;const p=S.projects[0];if(!p||!p.hid)return;p.hid=false;if(p.val&&p.val[p.sit]&&p.sit<4)p.sit++;S.cur=p.id;DM="";save();go("attachement")}
 function dosSend(id){const p=S.projects.find(x=>x.id==id);if(!p)return;let ht=0;try{ht=calc(p).mi}catch(e){}const att=Array.from({length:Math.max(0,maxVal(p)-(p.ds||0))},(_,i)=>(p.ds||0)+1+i).join(", ");
-const m="Dossier à préparer – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+(att?"\nAttachements : "+att:"")+(p.avReq?"\nAvenant : "+avS(p.avReq)+(cpL(p,p.avReq).length?"\nTravaux complémentaires : "+cpL(p,p.avReq).length+" article(s) · HT "+fmt(cpT(p,p.avReq))+" DA":""):"")+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
+const m=(DOSSIER_AUTO?"Dossier téléchargé":"Dossier à préparer")+" – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+(att?"\nAttachements : "+att:"")+(p.avReq?"\nAvenant : "+avS(p.avReq)+(cpL(p,p.avReq).length?"\nTravaux complémentaires : "+cpL(p,p.avReq).length+" article(s) · HT "+fmt(cpT(p,p.avReq))+" DA":""):"")+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
+if(DOSSIER_AUTO){dosDirect(p,m);return}
 p.sent=Date.now();save();licCnt("envoi-dossier","Envoi du dossier");DM="";
 const a=document.createElement("a");a.href="https://wa.me/"+WAN+"?text="+encodeURIComponent(m);a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();go()}
+/* Envoyer sans OK : l'Excel se télécharge tout de suite (dans le geste de l'utilisateur), le dossier est compté, puis WhatsApp s'ouvre pour prévenir l'architecte */
+function dosDirect(p,m){const k=(p.dn||0)+1,kind=p.avReq?"full":"att";licCnt("envoi-dossier","Envoi du dossier");licCnt("dossier-telecharge","Dossier téléchargé");
+p.dos={t:Date.now(),k};S.cur=p.id;DM="";
+try{exportX(p.id,true,kind=="att"?"att":undefined)}catch(e){delete p.dos;DM="Téléchargement impossible : réessayez.";save();go("projets");return}
+p.dk=kind;dosWipe(p,k);
+if(DOSSIER_NOTIF)setTimeout(()=>{const a=document.createElement("a");a.href="https://wa.me/"+WAN+"?text="+encodeURIComponent(m);a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove()},900);
+go("projets")}
 /* dossier livré : l'écran redevient vide, le projet reste caché ; l'OK de ce dossier ne sert plus ensuite */
 function dosWipe(p,k){delete p.dos;p.hid=true;p.dn=k;p.ds=maxVal(p);if(p.avReq){if(p.avReq==5)p.clos=true;else p.avs=p.avReq;delete p.avReq}p.sent=0;S.entInfo={};ENT_KEYS.forEach(x=>S.entInfo[x]=p[x]);S.cur=null;S.tab="projets";S.bm="";DM="✅ Dossier téléchargé.";save()}
 function dosAuto(id,k){setTimeout(()=>{const p=S.projects.find(x=>x.id==id);if(!p||!p.dos)return;p.dos.k=k;save();licCnt("dossier-telecharge","Dossier téléchargé");const again=k===(p.dn||0)&&p.hid,kind=again?(p.dk||"full"):(p.avReq?"full":"att");try{exportX(id,true,kind=="att"?"att":undefined)}catch(e){delete p.dos;DM="Téléchargement impossible : touchez « Pas reçu ? » ou écrivez-nous.";go();return}setTimeout(()=>{if(!again)p.dk=kind;dosWipe(p,k);go("projets")},1500)},700)}

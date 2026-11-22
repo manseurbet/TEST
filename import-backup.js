@@ -21,8 +21,8 @@ it.push({n:k,pre,d:dd,u,q,pu:puv,lot,m:Array(12).fill(0),av:[0,0,0]});pre=[]});
 
 if(nu)W.push(nu+" article(s) sans unité.");
 if(fx===2&&it.length&&c.mt>=0&&mS>0&&Math.abs(mS-mN)>1)W.unshift("Aucune ligne d’en-tête reconnue : lecture par position (Code – Désignation – Unité – Quantité – Prix unitaire – Montant). Vérifiez que cet ordre est bien celui du fichier.");
-it.w=W;it.tl=TL;it.chk=c.mt>=0&&mS>0?{mS,mN}:null;return it}
-let CAND=[],FN="",CM=false;
+it.std=!fx&&c.d>=0&&c.u>=0&&c.q>=0&&c.pu>=0&&c.mt>=0;it.w=W;it.tl=TL;it.chk=c.mt>=0&&mS>0?{mS,mN}:null;return it}
+let CAND=[],FN="",CM=false;const NONCONF="Le devis n’est pas conforme au standard. Colonnes : Code, Désignation, Unité, Quantité, Prix unitaire, Montant.";
 function use(i){licCnt("devis-importe","Devis importé");const p=P(),c=CAND[i];
 if(CM){const n=p.avn||1;p.cp=p.cp||{};p.cp[n]=c.it.map(x=>({n:x.n||"",pre:(x.pre||[]).map(h=>Object.assign({},h)),d:x.d,u:x.u,q:x.q,pu:x.pu,lot:x.lot||""}));S.msg=c.it.length+" article(s) complémentaire(s) importé(s) depuis « "+c.nm+" » : total HT "+fmt(c.t)+" DA. Comparez avec votre devis complémentaire.";CAND=[];CM=false;go();return}
 p.items=c.it.slice();p.adj={};p.sit=1;p.val={};p.lock=true;if((S.pn||"").trim())p.name=S.pn.trim();if(p.name==="Nouveau projet"&&FN)p.name=FN.replace(/\.[^.]+$/,"");S.msg=c.it.length+" articles importés depuis « "+c.nm+" » : total HT "+fmt(c.t)+" DA. Comparez avec le total de votre devis.";CAND=[];S.pt="";S.pn="";S.pz=false;S.tab="devis";go()}
@@ -33,7 +33,11 @@ function cn(){CM=false;if(CAND[0]&&CAND[0].nm=="Texte collé")S.pz=true;CAND=[];
 function imp(inp,cm){if(!IMPORT_FILE_ON){inp.value="";return}const fl=inp.files[0];if(!fl)return;const p=P();CM=!!cm;if(!cm&&Object.keys(p.val||{}).length){S.msg="Devis verrouillé : des attachements sont déjà validés.";go();return}
 const rd=new FileReader();FN=fl.name;
 rd.onload=e=>{try{if(typeof XLSX==="undefined"){S.msg="La bibliothèque de lecture Excel n’est pas chargée (connexion internet ?). Vérifiez votre connexion puis réessayez.";go();return}const wb=XLSX.read(e.target.result,{type:"array"});if(wb.Sheets&&wb.Sheets["_archigest"]){if(p&&!p.items.length&&p.name==="Mon projet"){S.projects=S.projects.filter(x=>x!==p);S.cur=null}S.msg="Ce fichier est une sauvegarde : utilisez « Restaurer » sur l’accueil.";go();return}
-const sh=wb.SheetNames.filter(n=>!/infrastructure/i.test(n)).map(nm=>({nm,rw:XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:""})}));let l=sh.map(x=>({nm:x.nm,it:parseSheet(x.rw)}));if(!l.some(x=>x.it.length))l=sh.map(x=>({nm:x.nm,it:parseSheet(x.rw,2)}));cands(l)}catch(x){S.msg="Fichier illisible. Utilisez un fichier Excel ou CSV.";go()}};
+const names=wb.SheetNames.filter(n=>!/infrastructure/i.test(n)),rows=n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""}),filled=n=>rows(n).some(r=>r.some(x=>String(x).trim()));
+const ai=(((wb.Workbook||{}).Views||[])[0]||{}).activeTab,an=ai!=null?wb.SheetNames[+ai]:null,nm=an&&names.includes(an)&&filled(an)?an:names.find(filled);
+const it=nm?parseSheet(rows(nm)):[],t=it.reduce((a,y)=>a+y.q*y.pu,0);
+if(!it.length||!it.std||!(t>0)){S.msg=NONCONF;CAND=[];go();return}
+CAND=[{nm,it,t}];use(0)}catch(x){S.msg="Fichier illisible. Utilisez un fichier Excel ou CSV.";go()}};
 rd.onerror=()=>{S.msg="Lecture du fichier impossible. Réessayez avec un fichier Excel ou CSV.";go()};rd.readAsArrayBuffer(fl)}
 function ptab(t){const R=[];let r=[],f="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=ch}else if(ch=='"'&&f==="")q=true;else if(ch=="\t"){r.push(f);f=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";R.push(r);r=[]}else f+=ch}
 if(f!==""||r.length){r.push(f);R.push(r)}while(R.length&&R[R.length-1].every(x=>!String(x).trim()))R.pop();return R}

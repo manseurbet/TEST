@@ -155,7 +155,8 @@ for(let k=1;k<=4;k++)if(hasD(k)){p.sit=k;put(["Attachement "+k],VW.attachement(p
 p.sit=sv.sit;
 if(kind!="att"&&p.items.some(it=>it.m.some(x=>x>0))){p.sd=true;put(["Situation définitive"],VW.situation(p));p.sd=sv.sd}
 const av=new Set([sv.avn||1]);Object.keys(p.cp||{}).forEach(k=>{if(p.cp[k].length)av.add(+k)});p.items.forEach(it=>(it.av||[]).forEach((x,j)=>{if(x)av.add(j+1)}));
-if(kind!="att")[...av].sort((a,b)=>a-b).forEach(n=>{p.avn=n;put(["Avenant "+n+" - Supplémentaires","Avenant "+n+" - Diminution","Avenant "+n+" - Complémentaires","Avenant "+n+" - Récapitulatif","Avenant "+n+" - Nouveau devis"],VW.avenants(p))});
+const hasAv=p.items.some(it=>(it.av||[]).some(x=>x))||Object.keys(p.cp||{}).some(k=>p.cp[k].length);if(hasAv||p.clos)av.add(5);
+if(kind!="att")[...av].sort((a,b)=>a-b).forEach(n=>{p.avn=n;put(n==5?["Avenant de clôture - Suppl.","Avenant de clôture - Dimin.","Avenant de clôture - Compl.","Avenant de clôture - Récap.","Avenant de clôture - Nv devis"]:["Avenant "+n+" - Supplémentaires","Avenant "+n+" - Diminution","Avenant "+n+" - Complémentaires","Avenant "+n+" - Récapitulatif","Avenant "+n+" - Nouveau devis"],VW.avenants(p))});
 p.avn=sv.avn;
 if(kind!="att")put(["DGD","Récap DGD"],VW.dgd(p));
 /* données de restauration (feuille très cachée) */

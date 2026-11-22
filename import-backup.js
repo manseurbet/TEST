@@ -33,11 +33,7 @@ function cn(){CM=false;if(CAND[0]&&CAND[0].nm=="Texte collé")S.pz=true;CAND=[];
 function imp(inp,cm){if(!IMPORT_FILE_ON){inp.value="";return}const fl=inp.files[0];if(!fl)return;const p=P();CM=!!cm;if(!cm&&Object.keys(p.val||{}).length){S.msg="Devis verrouillé : des attachements sont déjà validés.";go();return}
 const rd=new FileReader();FN=fl.name;
 rd.onload=e=>{try{if(typeof XLSX==="undefined"){S.msg="La bibliothèque de lecture Excel n’est pas chargée (connexion internet ?). Vérifiez votre connexion puis réessayez.";go();return}const wb=XLSX.read(e.target.result,{type:"array"});if(wb.Sheets&&wb.Sheets["_archigest"]){if(p&&!p.items.length&&p.name==="Mon projet"){S.projects=S.projects.filter(x=>x!==p);S.cur=null}S.msg="Ce fichier est une sauvegarde : utilisez « Restaurer » sur l’accueil.";go();return}
-const names=wb.SheetNames.filter(n=>!/infrastructure/i.test(n)),rows=n=>XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:""}),filled=n=>rows(n).some(r=>r.some(x=>String(x).trim()));
-const ai=(((wb.Workbook||{}).Views||[])[0]||{}).activeTab,an=ai!=null?wb.SheetNames[+ai]:null,nm=an&&names.includes(an)&&filled(an)?an:names.find(filled);
-const it=nm?parseSheet(rows(nm)):[],t=it.reduce((a,y)=>a+y.q*y.pu,0);
-if(!it.length||!it.std||!(t>0)){S.msg=NONCONF;CAND=[];go();return}
-CAND=[{nm,it,t}];use(0)}catch(x){S.msg="Fichier illisible. Utilisez un fichier Excel ou CSV.";go()}};
+const sh=wb.SheetNames.filter(n=>!/infrastructure/i.test(n)).map(nm=>({nm,rw:XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,defval:""})}));const tot=it=>it.reduce((a,y)=>a+y.q*y.pu,0);let l=sh.map(x=>({nm:x.nm,it:parseSheet(x.rw)}));let ok=l.filter(x=>x.it.length&&x.it.std&&tot(x.it)>0);if(!ok.length){l=sh.map(x=>({nm:x.nm,it:parseSheet(x.rw,2)}));ok=l.filter(x=>x.it.length&&tot(x.it)>0)}if(!ok.length){S.msg=NONCONF;CAND=[];go();return}cands(ok)}catch(x){S.msg="Fichier illisible. Utilisez un fichier Excel ou CSV.";go()}};
 rd.onerror=()=>{S.msg="Lecture du fichier impossible. Réessayez avec un fichier Excel ou CSV.";go()};rd.readAsArrayBuffer(fl)}
 function ptab(t){const R=[];let r=[],f="",q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=ch}else if(ch=='"'&&f==="")q=true;else if(ch=="\t"){r.push(f);f=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(f);f="";R.push(r);r=[]}else f+=ch}
 if(f!==""||r.length){r.push(f);R.push(r)}while(R.length&&R[R.length-1].every(x=>!String(x).trim()))R.pop();return R}

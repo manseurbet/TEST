@@ -24,7 +24,7 @@ if(fx===2&&it.length&&c.mt>=0&&mS>0&&Math.abs(mS-mN)>1)W.unshift("Aucune ligne d
 it.std=!fx&&c.d>=0&&c.u>=0&&c.q>=0&&c.pu>=0&&c.mt>=0;it.w=W;it.tl=TL;it.chk=c.mt>=0&&mS>0?{mS,mN}:null;return it}
 let CAND=[],FN="",CM=false;const NONCONF="Le devis n’est pas conforme au standard. Colonnes : Code, Désignation, Unité, Quantité, Prix unitaire, Montant.";
 function use(i){licCnt("devis-importe","Devis importé");const p=P(),c=CAND[i];
-if(CM){const n=p.avn||1;p.cp=p.cp||{};p.cp[n]=c.it.map(x=>({n:x.n||"",pre:(x.pre||[]).map(h=>Object.assign({},h)),d:x.d,u:x.u,q:x.q,pu:x.pu,lot:x.lot||""}));S.msg=c.it.length+" article(s) complémentaire(s) importé(s) depuis « "+c.nm+" » : total HT "+fmt(c.t)+" DA. Comparez avec votre devis complémentaire.";CAND=[];CM=false;go();return}
+if(CM){const n=p.avn||1;p.cp=p.cp||{};p.cpImp=p.cpImp||{};p.cpImp[n]=1;p.cp[n]=c.it.map(x=>({n:x.n||"",pre:(x.pre||[]).map(h=>Object.assign({},h)),d:x.d,u:x.u,q:x.q,pu:x.pu,lot:x.lot||""}));S.msg=c.it.length+" article(s) complémentaire(s) importé(s) depuis « "+c.nm+" » : total HT "+fmt(c.t)+" DA. Comparez avec votre devis complémentaire.";CAND=[];CM=false;go();return}
 p.items=c.it.slice();p.adj={};p.sit=1;p.val={};p.lock=true;if((S.pn||"").trim())p.name=S.pn.trim();if(p.name==="Nouveau projet"&&FN)p.name=FN.replace(/\.[^.]+$/,"");S.msg=c.it.length+" articles importés depuis « "+c.nm+" » : total HT "+fmt(c.t)+" DA. Comparez avec le total de votre devis.";CAND=[];S.pt="";S.pn="";S.pz=false;S.tab="devis";go()}
 function cands(l){CAND=l.filter(x=>x.it.length).map(x=>Object.assign(x,{t:x.it.reduce((a,y)=>a+y.q*y.pu,0)}));
 if(!CAND.length){S.msg="Aucun article reconnu : vérifiez que les colonnes sont dans l’ordre Code, Désignation, Unité, Quantité, Prix unitaire, Montant.";go();return}

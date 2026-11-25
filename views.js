@@ -283,8 +283,8 @@ return selS(p,part=="s"?"Situation":"Décompte")+gnav(part)+(part=="s"?c2:c1)+`<
 /* ================================================================
    AFFICHAGE — table des pages (VW) et render()
    ================================================================ */
-const VW={recapa:vRecA,recaps:vRecS,recapd:vRecD,recapg:vRecG,devis:vDevis,infos:vInfos,attachement:vAtt,decompte:vDec,situation:vSit,avenants:vAv,dgd:vDgd};
-function render(){const p=P();if(S.mode=="entreprise"&&!["projets","devis","attachement","infos","avent"].includes(S.tab))S.tab="projets";if(!VW[S.tab]&&S.tab!="projets"&&S.tab!="ouvrir")S.tab="projets";if(LT!==null&&S.tab!==LT){LA=false;LM="";LG=""}LT=S.tab;const lk=S.mode!="entreprise"&&licSt().k=="fin";
+const VW={recapa:vRecA,recaps:vRecS,recapd:vRecD,recapg:vRecG,devis:vDevis,infos:vInfos,attachement:vAtt,decompte:vDec,situation:vSit,avenants:vAv,dgd:vDgd,paiement:vPaie};
+function render(){const p=P();if(S.mode=="entreprise"&&!["projets","devis","attachement","infos","avent","paiement"].includes(S.tab))S.tab="projets";if(!VW[S.tab]&&S.tab!="projets"&&S.tab!="ouvrir")S.tab="projets";if(LT!==null&&S.tab!==LT){LA=false;LM="";LG=""}LT=S.tab;const lk=S.mode!="entreprise"&&licSt().k=="fin";
 $("#pn").textContent=lk?"":p?(p.grp&&S.mode!="entreprise"?p.grp+" › ":"")+p.name:"";
 $("#nav").style.display=S.mode=="entreprise"?"none":"";$("#nav").innerHTML=S.mode=="entreprise"?"":TABS.map(([k,i,l])=>`<button class="${S.tab==k||(k=="projets"&&(S.tab=="infos"||S.tab=="ouvrir"))?"on":""}" ${lk||(k!="projets"&&!p)?"disabled":""} onclick="go('${k}')"><span>${i}</span>${l}</button>`).join("");
 $("#v").innerHTML=(lk?licW(""):S.tab=="ouvrir"?vOuvrir():S.tab=="projets"||!p?vProj():VW[S.tab](p))+CPY;{const ap=document.getElementById("apropos");if(ap)ap.hidden=S.tab!="projets"}document.body.classList.toggle("wm",S.mode!="entreprise"&&licSt().wm);document.body.classList.toggle("noprt",S.mode=="entreprise"&&S.tab!="attachement")}
@@ -306,7 +306,7 @@ const btns=s.k=="actif"?"":`<div style="display:flex;flex-direction:column;gap:8
 if(s.k=="none")return`<div class="card np" id="lic" style="text-align:center"><button class="pri" style="width:100%;font-size:18px;padding:16px;font-weight:700" onclick="licEssai()">🚀 Essayer · 30 jours gratuit</button><div style="height:8px"></div><button style="width:100%" onclick="licTg()">🔑 J’ai un code</button>${LG?`<div style="color:var(--bad);font-weight:700;margin-top:8px">${esc(LG)}</div>`:""}${form}</div>`;
 return`<div class="card np" id="lic" style="font-size:13px;text-align:center">${h}${LG&&s.k!="actif"?`<div style="color:var(--bad);font-weight:700;margin-top:8px">${esc(LG)}</div>`:""}${btns}${form}</div>`}
 /* barrière : refuse la création d’un projet, d’un devis ou la restauration tant qu’aucune licence n’est active */
-function licGate(){if(["actif","essai"].includes(licSt().k))return true;LA=false;LM="";LG="🔒 Code requis.";go();setTimeout(()=>{const e=document.getElementById("lic");if(e)e.scrollIntoView({block:"center"})},60);return false}
+function licGate(){if(S.mode=="entreprise"||["actif","essai"].includes(licSt().k))return true;LA=false;LM="";LG="🔒 Code requis.";go();setTimeout(()=>{const e=document.getElementById("lic");if(e)e.scrollIntoView({block:"center"})},60);return false}
 /* événement GoatCounter : si le compteur n'est pas encore chargé (activation par lien dès l'ouverture), on réessaie pendant quelques secondes */
 function licCnt(p,t){if(/\/TEST(\/|$)/.test(location.pathname))return;try{gtag("event",String(p).replace(/-/g,"_"),{event_title:t})}catch(e){}const go1=()=>{try{goatcounter.count({path:p,title:t,event:true})}catch(e){}};
 if(window.goatcounter&&goatcounter.count){go1();return}let n=0;const iv=setInterval(()=>{if(window.goatcounter&&goatcounter.count){clearInterval(iv);go1()}else if(++n>40)clearInterval(iv)},250)}
@@ -352,7 +352,7 @@ const imp=(t,c)=>`<label class="btn${c?" pri":""}" style="font-size:18px;padding
 if(S.nd&&p&&p.hid)h=`<p style="margin:0;font-weight:700">⚠️ Remplacer le projet actuel ?</p>`+imp("📄 Importer un devis",1)+`<button style="padding:8px" onclick="ndCancel()">✕ Annuler</button>`;
 else if(p&&p.hid&&S.av)h=avChoice(p);
 else if(p&&p.hid&&p.clos)h=`<button class="pri" style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`;
-else if(p&&p.hid){const more=p.sit<4||!(p.val&&p.val[p.sit]);h=avPend(p)+(more?`<button class="pri" style="font-size:18px;padding:16px" onclick="entSuite()">➕ Attachement suivant</button>`:"")+avBtn(p)+(`<button${!more?` class="pri"`:""} style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`)+`<button style="font-size:13px;padding:8px" onclick="dosRe()">↻ Pas reçu ? Télécharger encore</button>`}
+else if(p&&p.hid&&p.clos)h=`<button class="pri" style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`;else if(p&&p.hid){const more=p.sit<4||!(p.val&&p.val[p.sit]);h=avPend(p)+(more?`<button class="pri" style="font-size:18px;padding:16px" onclick="entSuite()">➕ Attachement suivant</button>`:"")+avBtn(p)+(`<button${!more?` class="pri"`:""} style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`)}
 else if(!p||!p.items.length)h=imp("📄 Importer le devis Excel",1);
 else h=`<button class="pri" style="font-size:18px;padding:16px" onclick="opn(${p.id})">📁 Mon projet</button>${p.sent?`<p style="margin:0;font-size:13px">✅ Envoyé · dossier sous 24 h</p>`:""}`;
 return`<div class="card" style="text-align:center"><div style="font-size:42px">🏗️</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">${m}${h}</div>${bm}</div>`}
@@ -361,12 +361,12 @@ function entImp(inp){if(!inp.files||!inp.files[0])return;DM="";S.bm="";S.nd=fals
 if(!p||p.hid){S.projects=[];p=mk("Mon projet");p.id=Date.now()+Math.floor(Math.random()*1000);ENT_KEYS.forEach(k=>{if(S.entInfo&&S.entInfo[k]!=null&&S.entInfo[k]!=="")p[k]=S.entInfo[k]});licCnt("projet-cree","Projet créé");S.entUsed=true;S.projects.push(p)}
 S.cur=p.id;S.tab="devis";imp(inp)}
 /* « Attachement suivant » : le projet livré reprend là où il en était, avec son cumul */
-function ndAsk(){if(!licGate())return;S.nd=true;go()}
+function ndAsk(){S.nd=true;go()}
 function ndCancel(){S.nd=false;go()}
 function entSuite(){S.nd=false;const p=S.projects[0];if(!p||!p.hid)return;p.hid=false;if(p.val&&p.val[p.sit]&&p.sit<4)p.sit++;S.cur=p.id;DM="";save();go("attachement")}
 function dosSend(id){const p=S.projects.find(x=>x.id==id);if(!p)return;let ht=0;try{ht=calc(p).mi}catch(e){}const att=Array.from({length:Math.max(0,maxVal(p)-(p.ds||0))},(_,i)=>(p.ds||0)+1+i).join(", ");
 const m=(DOSSIER_AUTO?"Dossier téléchargé":"Dossier à préparer")+" – situation-dgd.com\nEntrepreneur : "+(p.ent||"—")+"\nProjet : "+p.name+"\nDossier : "+((p.dn||0)+1)+(att?"\nAttachements : "+att:"")+(p.avReq?"\nAvenant : "+avS(p.avReq)+(cpL(p,p.avReq).length?"\nTravaux complémentaires : "+cpL(p,p.avReq).length+" article(s) · HT "+fmt(cpT(p,p.avReq))+" DA":""):"")+"\nDevis HT : "+fmt(ht)+" DA\nRéf : "+dosRef(p);
-if(DOSSIER_AUTO){dosDirect(p,m);return}
+if(DOSSIER_AUTO){if(ENT()&&!["essai","actif"].includes(licSt().k)){p.sent=Date.now();S.payP=p.id;S.payMsg=m;save();go("paiement");return}dosDirect(p,m);return}
 p.sent=Date.now();save();licCnt("envoi-dossier","Envoi du dossier");DM="";
 const a=document.createElement("a");a.href="https://wa.me/"+WAN+"?text="+encodeURIComponent(m);a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove();go()}
 /* Envoyer sans OK : l'Excel se télécharge tout de suite (dans le geste de l'utilisateur), le dossier est compté, puis WhatsApp s'ouvre pour prévenir l'architecte */
@@ -422,3 +422,9 @@ function avDraftCancel(id){const p=S.projects.find(x=>x.id==id);if(p)avDrop(p);S
 /* Annuler : efface le devis qui vient d'être importé (avant tout attachement validé) et revient à « Importer devis » */
 function entAnnuler(){const p=S.projects[0];if(!p||p.hid||p.dn||p.sent||maxVal(p))return;S.projects=[];S.cur=null;S.entUsed=false;CAND=[];S.msg="";S.nd=false;S.av=false;DM="";S.bm="";S.tab="projets";save();go("projets")}
 (()=>{const st=document.createElement("style");st.textContent='@media print{body.noprt>*{display:none!important}body.noprt::before{content:"Impression : attachement seulement";display:block;text-align:center;font-size:18px;padding:40px}}';document.head.appendChild(st)})();
+
+/* ===== Écran de paiement (Entreprise) : après chaque envoi, avant tout téléchargement ===== */
+function vPaie(){const p=S.projects.find(x=>x.id==S.payP);const F=typeof FORMULES!="undefined"?FORMULES:[];if(!p)return`<div class="card"><button class="pri" onclick="payDone()">← Accueil</button></div>`;
+const rows=F.map(f=>`<div class="card np" style="margin:0 0 10px;text-align:left"><b>${esc(f.nom)} · ${fmt(f.prix)} DA</b><div style="font-size:13px;color:var(--mut)">${esc(f.regle)} : ${esc(f.detail)}</div></div>`).join("");
+return`<div class="card" style="text-align:center"><b>Paiement du dossier</b><div style="font-size:13px;margin:6px 0">${esc(p.name)} · dossier ${(p.dn||0)+1}</div><div style="font-size:14px;margin:8px 0 12px">Choisissez la formule, payez, puis envoyez le reçu sur WhatsApp. Le lien de téléchargement vous sera envoyé après paiement.</div>${rows}<a class="btn pri" href="https://wa.me/${WAN}?text=${encodeURIComponent(S.payMsg||"")}" target="_blank" rel="noopener" style="display:block;text-decoration:none;font-size:17px;padding:14px;margin-top:6px">💬 Payer sur WhatsApp</a><div style="height:8px"></div><button style="width:100%" onclick="payDone()">← Retour à l'accueil</button></div>`}
+function payDone(){S.payP=null;S.payMsg="";go("projets")}

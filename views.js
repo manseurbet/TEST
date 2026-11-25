@@ -353,7 +353,7 @@ if(S.nd&&p&&p.hid)h=`<p style="margin:0;font-weight:700">⚠️ Remplacer le pro
 else if(p&&p.hid&&S.av)h=avChoice(p);
 else if(p&&p.hid&&p.clos)h=`<button class="pri" style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`;
 else if(p&&p.hid&&p.clos)h=`<button class="pri" style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`;else if(p&&p.hid){const more=p.sit<4||!(p.val&&p.val[p.sit]);h=avPend(p)+(more?`<button class="pri" style="font-size:18px;padding:16px" onclick="entSuite()">➕ Attachement suivant</button>`:"")+avBtn(p)+(`<button${!more?` class="pri"`:""} style="font-size:18px;padding:16px" onclick="ndAsk()">📄 Nouveau projet</button>`)}
-else if(!p||!p.items.length)h=imp("📄 Importer le devis Excel",1);
+else if(!p||!p.items.length)h=licSt().k=="none"?`<button disabled style="font-size:18px;padding:16px;opacity:.45">📄 Importer le devis Excel</button>`:imp("📄 Importer le devis Excel",1);
 else h=`<button class="pri" style="font-size:18px;padding:16px" onclick="opn(${p.id})">📁 Mon projet</button>${p.sent?`<p style="margin:0;font-size:13px">✅ Envoyé · dossier sous 24 h</p>`:""}`;
 return`<div class="card" style="text-align:center"><div style="font-size:42px">🏗️</div><div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">${m}${h}</div>${bm}</div>`}
 /* import du devis : le projet se crée tout seul (le projet précédent, déjà livré, est remplacé), avec les informations d'entreprise déjà saisies */

@@ -43,7 +43,7 @@ function di(i){P().items.splice(i,1);go()}
 function si(i,k,v){P().items[i][k]=v;go()}
 function sm(i,v){const p=P();if(p.val&&p.val[p.sit])return;p.items[i].m[p.sit-1]=v;go()}
 function sa(k,v){const p=P();(p.adj[p.sit]=p.adj[p.sit]||{av:0,pen:0})[k]=v;go()}
-const IT=it=>{it.av=it.av||[];while(it.av.length<12)it.av.push(0);const t=x=>tz(it,x);it.qm=t(t(it.q)+it.av.reduce((a,b)=>a+t(b),0));it.qa=it.qm;return it};
+const IT=it=>{it.av=it.av||[];while(it.av.length<12)it.av.push(0);const t=x=>tz(it,x);it.qm=t(t(it.q)+Object.values(it.fz||{}).reduce((a,b)=>a+t(b),0));it.qa=it.qm;return it};
 function calc(p){const n=p.sit,r={prev:0,mois:0,cum:0,mi:0,avm:0,mk:0,real:0,pv:0,mv:0,mm:0};
 p.items.forEach(it=>{IT(it);const t=x=>tz(it,x),sum=k=>t(it.m.slice(0,k).reduce((a,b)=>a+t(b),0)),tot=sum(12),pl=t(Math.max(tot-it.qm,0)),mn=p.done?t(Math.max(it.qm-tot,0)):0;
 it.qa=t(it.qm+pl-mn);it.au=t(pl-mn);

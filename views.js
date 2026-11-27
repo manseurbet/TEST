@@ -113,7 +113,8 @@ const lettres=(x,w)=>{x=ta(x);let e=Math.floor(x+1e-7),c=Math.round((x-e)*100);i
 /* ================================================================
    EN-TÊTE COMMUN des documents imprimés
    ================================================================ */
-const hdr=p=>`<div style="font-size:12px;line-height:1.5">${esc(p.ent||"")}${p.adr?"<br>"+esc(p.adr):""}</div>`;
+const lockMsg=p=>{const L=lockSit(p);return L&&p.sit<=L?'<div class="bad" style="margin-bottom:6px">🔒 Période verrouillée : DGD validé</div>':''};
+const hdr=p=>`${lockMsg(p)}<div style="font-size:12px;line-height:1.5">${esc(p.ent||"")}${p.adr?"<br>"+esc(p.adr):""}</div>`;
 
 /* ================================================================
    PAGE DÉCOMPTE
@@ -156,7 +157,7 @@ ${ret?"":`<div style="color:var(--mut);font-size:12px;margin-top:6px">Caution de
 <div style="margin-top:8px">Fait à …………… le ……………</div>
 <div class="row np" style="margin-top:10px">${PB("pri")}<button onclick="go('infos')">👷 Entrepreneur et contrat</button></div></div>`}
 const selA=p=>`<div class="card np"><label style="width:200px">Avenant<select onchange="set('avn',+this.value)">${[...Array(5)].map((_,i)=>`<option value="${i+1}" ${i+1==(p.avn||1)?"selected":""}>${i==4?"Avenant de clôture":i+1}</option>`).join("")}</select></label></div>`;
-function sq(i,v){const p=P(),it=p.items[i],n=p.avn||1;IT(it);it.av[n-1]=Math.round((v-it.q-it.av.slice(0,n-1).reduce((a,b)=>a+b,0))*1e6)/1e6;go()}
+function sq(i,v){const p=P(),it=p.items[i],n=p.avn||1;if(projLocked(p))return;IT(it);it.av[n-1]=Math.round((v-it.q-it.av.slice(0,n-1).reduce((a,b)=>a+b,0))*1e6)/1e6;go()}
 
 /* ================================================================
    PAGE AVENANTS

@@ -119,7 +119,8 @@ const hdr=p=>`${lockMsg(p)}<div style="font-size:12px;line-height:1.5">${esc(p.e
 /* ================================================================
    PAGE DÉCOMPTE
    ================================================================ */
-function vDec(p){const r=calc(p),g={},C=x=>`<td class="r">${fp(x)}</td>`;
+const noVal=p=>`<div class="card np"><p>Validez l’attachement n° ${p.sit} pour générer ce document.</p></div>`;
+function vDec(p){if(!(p.val&&p.val[p.sit]))return noVal(p);const r=calc(p),g={},C=x=>`<td class="r">${fp(x)}</td>`;
 const rows=p.items.map((it,i)=>{const k=it.lot||"Sans lot",o=g[k]=g[k]||[0,0,0,0];o[0]=ta(o[0]+Mq(it));o[1]=ta(o[1]+Mp(it));o[2]=ta(o[2]+Mm(it));o[3]=ta(o[3]+Mc(it));
 return hd(p,i,12)+`<tr><td class="s1">${esc(it.n||"")}</td><td class="ds s2"><div class="dz">${esc(it.d)}</div></td><td>${esc(it.u)}</td>${Q(it,it.qm)}${Q(it,it.pr)}${Q(it,it.mo)}${Q(it,it.cu)}<td class="r">${fmt(it.pu)}</td>${C(Mq(it))}${C(Mp(it))}${C(Mm(it))}${C(Mc(it))}</tr>`+sbr(p,i,8,[Mq,Mp,Mm,Mc])}).join("");
 const tv=[r.mm,r.prev,r.mois,r.cum],T3=["TOTAL EN HT","TVA "+p.tva+" %","TOTAL EN TTC"].map((l,k)=>`<tr class="tot"><td colspan="8">${l}</td>${D4(tv,p.tva)[k].map(C).join("")}</tr>`).join("");
@@ -144,7 +145,7 @@ return`<div class="card sc pgb">${hdr(p)}${PJ(p)}<b>NOUVEAU DEVIS</b><table styl
 const sdR=p=>{const s0=p.sit;p.sit=4;const r4=calc(p);p.sit=s0;calc(p);const T=ndT(p);return Object.assign({},r4,{cum:T.t,prev:r4.cum,mm:T.t})};
 const selSD=p=>`<div class="card row np"><label style="width:200px">Situation<select onchange="gsd(this.value)">${[...Array(4)].map((_,i)=>`<option value="${i+1}" ${!p.sd&&i+1==p.sit?"selected":""} ${okTo(p,i+1)?"":"disabled"}>${i+1}${p.val&&p.val[i+1]?" ✓":""}</option>`).join("")}<option value="D" ${p.sd?"selected":""}>Situation définitive</option></select></label>${S.sm?`<span class="bad">${esc(S.sm)}</span>`:""}</div>`;
 function gsd(x){const p=P();if(x==="D"){p.sd=true;S.sm="";go()}else gs(+x)}
-function vSit(p){const r0=calc(p),D=!!p.sd,n=D?5:p.sit,sk=D?"D":p.sit,Z={af:0,aa:0,ao:0,rf:0,ra:0,ro:0,pen:0},A=k=>{const o=Object.assign({},Z,p.adj[k]||{});if(o.av&&!o.rf)o.rf=o.av;return o},b=n>1?A(n-1):Z,a=D?Object.assign({},A(5),{af:b.af,aa:b.aa,ao:b.ao}):A(n),r=D?sdR(p):r0;
+function vSit(p){if(!p.sd&&!(p.val&&p.val[p.sit]))return noVal(p);const r0=calc(p),D=!!p.sd,n=D?5:p.sit,sk=D?"D":p.sit,Z={af:0,aa:0,ao:0,rf:0,ra:0,ro:0,pen:0},A=k=>{const o=Object.assign({},Z,p.adj[k]||{});if(o.av&&!o.rf)o.rf=o.av;return o},b=n>1?A(n-1):Z,a=D?Object.assign({},A(5),{af:b.af,aa:b.aa,ao:b.ao}):A(n),r=D?sdR(p):r0;
 const {T1,T2,br,T4,ht,tva,ttc,ret,rt,net,cau}=sitCalc(r,a,b,p);
 const Rw=(l,v,c)=>`<tr class="${c||""}"><td>${l}</td><td class="r">${v}</td></tr>`,Ri=(l,k)=>`<tr><td>${l}</td><td class="r">${fp(a[k])}</td></tr>`;
 return selSD(p)+`<div class="card sitp">${idBlock(p)}<h3 style="margin:8px 0 4px">${D?"SITUATION DÉFINITIVE":"SITUATION N° "+n}</h3>

@@ -8,7 +8,7 @@ const dsc=()=>{const dl=[...new Set(S.projects.map(x=>x.grp).filter(Boolean))].f
 /* ================================================================
    PROJETS — créer, renommer, supprimer un projet et ses devis
    ================================================================ */
-const PJ=p=>p.grp&&S.mode!="entreprise"?`<div>PROJET : ${esc(p.grp)}</div><div>DEVIS : ${esc(p.name)}</div>`:`<div>PROJET : ${esc(p.name)}</div>`;
+const PJ=p=>p.ent?`<div>Nom : ${esc(p.ent)}</div>`:"";
 function mg(){S.eg=(S.eg||[]).filter(g=>!S.projects.some(x=>x.grp===g));if(S.mode=="entreprise"||!S.mode)return;const used=new Set(S.projects.map(x=>x.grp).filter(Boolean));S.projects.forEach(x=>{if(x.grp)return;let g=x.name||"Projet",c=g,n=1;while(used.has(c))c=g+" ("+(++n)+")";x.grp=c;used.add(c)})}
 function npj(){const e=S.mode=="entreprise";if(e&&S.projects.length){opn(S.projects[0].id);return}if(!licGate())return;if(e&&S.entUsed){S.bm="Un seul dossier.";go();return}S.nw=true;S.nwm="";go("projets");setTimeout(()=>{const x=document.getElementById("nwn");if(x)x.focus()},80)}
 function cpj(v){v=(v||"").trim();if(!v){S.nwm="Nom ?";go();setTimeout(()=>{const x=document.getElementById("nwn");if(x)x.focus()},80);return}if(!licGate())return;mg();const e=S.mode=="entreprise";if(!e&&(S.projects.some(x=>x.grp===v)||(S.eg||[]).includes(v))){S.nwm="Nom déjà pris.";go();return}licCnt("projet-cree","Projet créé");const p=mk(e?v:"Devis 1");p.id=Date.now()+Math.floor(Math.random()*1000);if(e)S.entUsed=true;else{licCnt("devis-cree","Devis créé");p.grp=v}S.projects.push(p);S.cur=p.id;S.nw=false;S.nwm="";S.del=null;go("devis")}
@@ -114,7 +114,7 @@ const lettres=(x,w)=>{x=ta(x);let e=Math.floor(x+1e-7),c=Math.round((x-e)*100);i
    EN-TÊTE COMMUN des documents imprimés
    ================================================================ */
 const lockMsg=p=>{const L=lockSit(p);return L&&p.sit<=L?'<div class="bad" style="margin-bottom:6px">🔒 Période verrouillée : DGD validé</div>':''};
-const hdr=p=>`${lockMsg(p)}<div style="font-size:12px;line-height:1.5">${esc(p.ent||"")}${p.adr?"<br>"+esc(p.adr):""}</div>`;
+const hdr=p=>`${lockMsg(p)}<div style="font-size:12px;line-height:1.5">${PJ(p)}${p.adr?"<div>Adresse : "+esc(p.adr)+"</div>":""}${p.objet?"<div>Objet : "+esc(p.objet)+"</div>":""}${p.moa?"<div>Maître d’ouvrage : "+esc(p.moa)+"</div>":""}</div>`;
 
 /* ================================================================
    PAGE DÉCOMPTE
@@ -127,7 +127,7 @@ const tv=[r.mm,r.prev,r.mois,r.cum],T3=["TOTAL EN HT","TVA "+p.tva+" %","TOTAL E
 const rec=Object.entries(g).map(([k,o])=>{const m=k.match(/^(LOT\s*\d+\s*\)?)\s*(.*)$/i);return`<tr><td>${esc(m?m[1]:"")}</td><td>${esc(m?m[2]:k)}</td>${o.map(C).join("")}</tr>`}).join(""),ct=[0,1,2,3].map(i=>Object.values(g).reduce((a,o)=>ta(a+o[i]),0));
 const R3=["TOTAL GÉNÉRAL en H.T","T.V.A "+p.tva+" %","TOTAL GÉNÉRAL en T.T.C"].map((l,k)=>`<tr class="tot"><td colspan="2">${l}</td>${D4(ct,p.tva)[k].map(C).join("")}</tr>`).join("");
 const ce=`style="text-align:center"`;
-return selS(p,"Décompte")+`<div class="land"><div class="card sc">${hdr(p)}${PJ(p)}<b>DÉCOMPTE N° ${p.sit}</b><table style="margin-top:6px"><tr><th rowspan="2" class="s1">CODE</th><th rowspan="2" class="s2">DÉSIGNATION DES OUVRAGES</th><th rowspan="2">U</th><th colspan="4" ${ce}>Quantité</th><th rowspan="2" class="r">P-U</th><th colspan="4" ${ce}>Montant</th></tr><tr><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumulé</th><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumulé</th></tr>${rows}${T3}</table><p>Arrêté le montant du présent décompte (cumulé) à la somme de (en TTC) :<br><b>${lettres(D4(tv,p.tva)[2][3],1)}</b></p></div>
+return selS(p,"Décompte")+`<div class="land"><div class="card sc">${hdr(p)}<b>DÉCOMPTE N° ${p.sit}</b><table style="margin-top:6px"><tr><th rowspan="2" class="s1">CODE</th><th rowspan="2" class="s2">DÉSIGNATION DES OUVRAGES</th><th rowspan="2">U</th><th colspan="4" ${ce}>Quantité</th><th rowspan="2" class="r">P-U</th><th colspan="4" ${ce}>Montant</th></tr><tr><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumulé</th><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumulé</th></tr>${rows}${T3}</table><p>Arrêté le montant du présent décompte (cumulé) à la somme de (en TTC) :<br><b>${lettres(D4(tv,p.tva)[2][3],1)}</b></p></div>
 <div class="card sc pgb"><b>RÉCAPITULATIF DU DÉCOMPTE N° ${p.sit}</b><table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumul</th></tr>${rec}${R3}</table><p>Arrêté le montant du présent décompte (cumulé) à la somme de (en TTC) :<br><b>${lettres(D4(ct,p.tva)[2][3],1)}</b></p></div></div>
 <div class="row np">${PB()}</div>`}
 
@@ -140,7 +140,7 @@ const ndT=p=>{calc(p);const a=p.items.filter(it=>it.origin!==(p.avn||1)).reduce(
 function ndCard(p){const T=ndT(p),C=ndC(p),th=`<tr><th class="s1">CODE</th><th class="s2">DÉSIGNATION DES OUVRAGES</th><th>U</th><th class="r">Quantité</th><th class="r">P-U</th><th class="r">Montant</th></tr>`,
 ln=(it,q)=>`<tr><td class="s1">${esc(it.n||"")}</td><td class="ds s2"><div class="dz">${esc(it.d)}</div></td><td>${esc(it.u)}</td>${Q(it,q)}<td class="r">${fmt(it.pu)}</td><td class="r">${fp(Mt(it,q))}</td></tr>`,
 F=(l,v)=>`<tr class="tot"><td colspan="5">${l}</td><td class="r">${fp(v)}</td></tr>`;
-return`<div class="card sc pgb">${hdr(p)}${PJ(p)}<b>NOUVEAU DEVIS</b><table style="margin-top:6px">${th}${p.items.map((it,i)=>it.tot?hd(p,i,6)+ln(it,it.tot):"").join("")}${C.length?`<tr><td colspan="6"><b>TRAVAUX COMPLÉMENTAIRES</b></td></tr>`+C.map((c,i)=>cpH(C,i,6)+ln(c,c.q)).join(""):""}${F("TOTAL EN HT",T.t)}${F("TVA "+p.tva+" %",TVx(T.t,p.tva))}${F("TOTAL EN TTC",TT(T.t,p.tva))}</table><p>Arrêté le montant du nouveau devis à la somme de (en TTC) :<br><b>${lettres(TT(T.t,p.tva),1)}</b></p></div>`}
+return`<div class="card sc pgb">${hdr(p)}<b>NOUVEAU DEVIS</b><table style="margin-top:6px">${th}${p.items.map((it,i)=>it.tot?hd(p,i,6)+ln(it,it.tot):"").join("")}${C.length?`<tr><td colspan="6"><b>TRAVAUX COMPLÉMENTAIRES</b></td></tr>`+C.map((c,i)=>cpH(C,i,6)+ln(c,c.q)).join(""):""}${F("TOTAL EN HT",T.t)}${F("TVA "+p.tva+" %",TVx(T.t,p.tva))}${F("TOTAL EN TTC",TT(T.t,p.tva))}</table><p>Arrêté le montant du nouveau devis à la somme de (en TTC) :<br><b>${lettres(TT(T.t,p.tva),1)}</b></p></div>`}
 /* Situation définitive : cumul = montant du nouveau devis ; déjà réalisé = cumul de la situation n° 4 ; avances reportées telles qu’à la situation n° 4 */
 const sdR=p=>{const s0=p.sit;const kv=Math.max(0,...Object.keys(p.val||{}).map(Number).filter(k=>p.val[k]));p.sit=kv||1;const rk=calc(p);p.sit=4;const r4=calc(p);p.sit=s0;calc(p);const T=ndT(p);const ks=Object.keys(p.dgdv||{}).map(Number);if(!ks.length)return Object.assign({},r4,{cum:T.t,prev:rk.cum,mm:T.t});const L=Math.max(...ks);const real=p.items.reduce((s,it)=>{const sn=it.snap&&it.snap[L];return s+(sn?Mt(it,sn.tot):0)},0);const cum=ta(ta(real)+cpT(p,L));return Object.assign({},r4,{cum,prev:rk.cum,mm:cum})};
 const selSD=p=>`<div class="card row np"><label style="width:200px">Situation<select onchange="gsd(this.value)">${[...Array(4)].map((_,i)=>`<option value="${i+1}" ${!p.sd&&i+1==p.sit?"selected":""} ${okTo(p,i+1)?"":"disabled"}>${i+1}${p.val&&p.val[i+1]?" ✓":""}</option>`).join("")}<option value="D" ${p.sd?"selected":""}>Situation définitive</option></select></label>${S.sm?`<span class="bad">${esc(S.sm)}</span>`:""}</div>`;
@@ -182,7 +182,7 @@ return(it.lot&&(!pv||pv.it.lot!==it.lot)?`<tr><td colspan="6"><b>${esc(it.lot)}<
 return{rows,T}};
 const A=pg(1),B=pg(-1),F=(l,v)=>`<tr class="tot"><td colspan="5">${l}</td><td class="r">${fp(v)}</td></tr>`,
 th=`<tr><th class="s1">CODE</th><th class="s2">DÉSIGNATION DES OUVRAGES</th><th>U</th><th class="r">Quantité</th><th class="r">P-U</th><th class="r">Montant</th></tr>`,
-hh=t=>`${hdr(p)}${PJ(p)}<b>${AVL(n)} : ${t}</b>`,
+hh=t=>`${hdr(p)}<b>${AVL(n)} : ${t}</b>`,
 nv=ta(prT+cpP(p,n)+A.T+cpT(p,n)-B.T),Rc=(l,v,c)=>`<tr class="${c||""}"><td>${l}</td><td class="r">${fp(v)}</td></tr>`;
 const cc=cpL(p,n),CT=cpT(p,n),
 ccard=(CM?chkBox():"")+cpBlock(p,n,"Travaux complémentaires"),
@@ -245,25 +245,25 @@ const C={};cpL(q,n).forEach(c=>{const k=(c.n?c.n+" – ":"")+c.d,m=cpM(c);C[k]=t
    RÉCAPITULATIVE GÉNÉRALE — AVENANTS
    ================================================================ */
 function vRecA(p){const ms=GM(p),n=p.avn||1;
-if(ms.length<2)return`<div class="card">Ce projet ne contient qu’un seul devis. Dans « Ouvrir », le bouton « ➕ Devis » permet d’en ajouter.</div>`;
+
 const C=x=>`<td class="r">${fp(x)}</td>`,N=ms.map(q=>({q,s:avNums(q,n),mi:calc(q).mi})),same=ms.every(q=>q.tva==ms[0].tva),tl=(l)=>l+(same?" "+ms[0].tva+" %":"");
 const pg=(key,tk,ttl,sg)=>{const tot=N.reduce((a,x)=>ta(a+x.s[tk]),0),tv=N.reduce((a,x)=>ta(a+TVx(x.s[tk],x.q.tva)),0),rows=N.map(({q,s})=>`<tr><td colspan="3"><b>${esc(q.name)}</b></td></tr>`+(Object.keys(s[key]).length?Object.entries(s[key]).map(([k,v])=>{const m=k.match(/^(LOT\s*\d+\s*\)?)\s*(.*)$/i);return`<tr><td>${esc(m?m[1]:"")}</td><td>${esc(m?m[2]:k)}</td>${C(v)}</tr>`}).join(""):`<tr><td colspan="3"><i>Aucun article.</i></td></tr>`)+`<tr class="tot"><td colspan="2">TOTAL ${esc(q.name)} ( H.T )</td>${C(s[tk])}</tr>`).join("");
-return`<div class="card sc${sg?" pgb":""}">${hdr(p)}<div>PROJET : ${esc(p.grp)}</div><b>RÉCAPITULATIVE GÉNÉRALE – ${AVL(n)} : ${ttl}</b> (DA)<table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Montant</th></tr>${rows}<tr class="tot"><td colspan="2">TOTAL GÉNÉRAL en H.T</td>${C(tot)}</tr><tr class="tot"><td colspan="2">${tl("T.V.A")}</td>${C(tv)}</tr><tr class="tot"><td colspan="2">TOTAL GÉNÉRAL en T.T.C</td>${C(ta(tot+tv))}</tr></table><p>Arrêté le montant à la somme de (en TTC) :<br><b>${lettres(ta(tot+tv),1)}</b></p></div>`};
+return`<div class="card sc${sg?" pgb":""}">${hdr(p)}<b>RÉCAPITULATIVE GÉNÉRALE – ${AVL(n)} : ${ttl}</b> (DA)<table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Montant</th></tr>${rows}<tr class="tot"><td colspan="2">TOTAL GÉNÉRAL en H.T</td>${C(tot)}</tr><tr class="tot"><td colspan="2">${tl("T.V.A")}</td>${C(tv)}</tr><tr class="tot"><td colspan="2">TOTAL GÉNÉRAL en T.T.C</td>${C(ta(tot+tv))}</tr></table><p>Arrêté le montant à la somme de (en TTC) :<br><b>${lettres(ta(tot+tv),1)}</b></p></div>`};
 const rc=N.map(({q,s,mi})=>`<tr><td>${esc(q.name)}</td>${[mi,s.prT,s.TA,s.TC,s.TB,ta(s.prT+s.TA+s.TC-s.TB)].map(C).join("")}</tr>`).join(""),sm=f=>N.reduce((a,x)=>ta(a+f(x)),0),nv=sm(x=>ta(x.s.prT+x.s.TA+x.s.TC-x.s.TB)),nvt=sm(x=>TVx(x.s.prT+x.s.TA+x.s.TC-x.s.TB,x.q.tva));
-return selA(p)+gnav("a")+pg("A","TA","TRAVAUX SUPPLÉMENTAIRES",false)+"\n"+pg("C","TC","TRAVAUX COMPLÉMENTAIRES",true)+"\n"+pg("B","TB","TRAVAUX EN DIMINUTION",true)+`
-<div class="card sc pgb">${hdr(p)}<div>PROJET : ${esc(p.grp)}</div><b>RÉCAPITULATIF GÉNÉRAL – ${AVL(n)}</b> (DA)<table style="margin-top:6px"><tr><th>Devis</th><th class="r">Marché initial</th><th class="r">Avant avenant</th><th class="r">+ Supplémentaires</th><th class="r">+ Complémentaires</th><th class="r">− Diminution</th><th class="r">Nouveau marché</th></tr>${rc}<tr class="tot"><td>TOTAL GÉNÉRAL en H.T</td>${[sm(x=>x.mi),sm(x=>x.s.prT),sm(x=>x.s.TA),sm(x=>x.s.TC),sm(x=>x.s.TB),nv].map(C).join("")}</tr><tr class="tot"><td colspan="6">${tl("T.V.A")}</td>${C(nvt)}</tr><tr class="tot"><td colspan="6">NOUVEAU MONTANT DU MARCHÉ EN T.T.C</td>${C(ta(nv+nvt))}</tr></table></div>
-<div class="row np">${PB()}</div>`}
+return `<div class="land">`+selA(p)+gnav("a")+pg("A","TA","TRAVAUX SUPPLÉMENTAIRES",false)+"\n"+pg("C","TC","TRAVAUX COMPLÉMENTAIRES",true)+"\n"+pg("B","TB","TRAVAUX EN DIMINUTION",true)+`
+<div class="card sc pgb">${hdr(p)}<b>RÉCAPITULATIF GÉNÉRAL – ${AVL(n)}</b> (DA)<table style="margin-top:6px"><tr><th>Devis</th><th class="r">Marché initial</th><th class="r">Avant avenant</th><th class="r">+ Supplémentaires</th><th class="r">+ Complémentaires</th><th class="r">− Diminution</th><th class="r">Nouveau marché</th></tr>${rc}<tr class="tot"><td>TOTAL GÉNÉRAL en H.T</td>${[sm(x=>x.mi),sm(x=>x.s.prT),sm(x=>x.s.TA),sm(x=>x.s.TC),sm(x=>x.s.TB),nv].map(C).join("")}</tr><tr class="tot"><td colspan="6">${tl("T.V.A")}</td>${C(nvt)}</tr><tr class="tot"><td colspan="6">NOUVEAU MONTANT DU MARCHÉ EN T.T.C</td>${C(ta(nv+nvt))}</tr></table></div>
+<div class="row np">${PB()}</div></div>`}
 
 /* ================================================================
    RÉCAPITULATIVE GÉNÉRALE — DGD
    ================================================================ */
 function vRecD(p){const ms=GM(p);
-if(ms.length<2)return`<div class="card">Ce projet ne contient qu’un seul devis. Dans « Ouvrir », le bouton « ➕ Devis » permet d’en ajouter.</div>`;
+
 const C=(x,j)=>`<td class="r">${fp(x)}</td>`,N=ms.map(q=>{calc(q);const G={},T=[0,0,0,0];q.items.forEach(it=>{const v=DV(it),k=it.lot||"Sans lot",o=G[k]=G[k]||[0,0,0,0];v.forEach((x,j)=>{o[j]=ta(o[j]+x);T[j]=ta(T[j]+x)})});return{q,G,T}}),
 tot=[0,1,2,3].map(j=>N.reduce((a,x)=>ta(a+x.T[j]),0)),tvc=[0,1,2,3].map(j=>N.reduce((a,x)=>ta(a+G4(x.T,x.q.tva)[1][j]),0)),same=ms.every(q=>q.tva==ms[0].tva);
 const rows=N.map(({q,G,T})=>`<tr><td colspan="6"><b>${esc(q.name)}</b></td></tr>`+Object.entries(G).map(([k,o])=>{const m=k.match(/^(LOT\s*\d+\s*\)?)\s*(.*)$/i);return`<tr><td>${esc(m?m[1]:"")}</td><td>${esc(m?m[2]:k)}</td>${o.map(C).join("")}</tr>`}).join("")+`<tr class="tot"><td colspan="2">TOTAL ${esc(q.name)} ( H.T )</td>${T.map(C).join("")}</tr>`).join("");
 const R3=[["TOTAL GÉNÉRAL en H.T",tot],["T.V.A"+(same?" "+ms[0].tva+" %":""),tvc],["TOTAL GÉNÉRAL en T.T.C",tot.map((x,j)=>ta(x+tvc[j]))]].map(([l,a])=>`<tr class="tot"><td colspan="2">${l}</td>${a.map(C).join("")}</tr>`).join(""),ttc=ta(tot[1]+tvc[1]);
-return gnav("d")+`<div class="land"><div class="card sc">${hdr(p)}<div>PROJET : ${esc(p.grp)}</div><b>RÉCAPITULATIVE GÉNÉRALE – DÉCOMPTE GÉNÉRAL DÉFINITIF</b> (DA)<div style="font-size:12px;color:var(--mut)">Devis réunis : ${ms.map(q=>esc(q.name)).join(" · ")}</div><table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Marché</th><th class="r">Réalisé</th><th class="r">Plus-value</th><th class="r">Moins-value</th></tr>${rows}${R3}</table>
+return gnav("d")+`<div class="land"><div class="card sc">${hdr(p)}<b>RÉCAPITULATIVE GÉNÉRALE – DÉCOMPTE GÉNÉRAL DÉFINITIF</b> (DA)<div style="font-size:12px;color:var(--mut)">Devis réunis : ${ms.map(q=>esc(q.name)).join(" · ")}</div><table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Marché</th><th class="r">Réalisé</th><th class="r">Plus-value</th><th class="r">Moins-value</th></tr>${rows}${R3}</table>
 <p>Arrêté le montant du présent DGD à la somme de (en TTC) :<br><b>${lettres(ttc,1)}</b></p><div class="row np" style="margin-top:8px">${PB()}</div></div></div>`}
 
 /* ================================================================
@@ -272,7 +272,7 @@ return gnav("d")+`<div class="land"><div class="card sc">${hdr(p)}<div>PROJET : 
 function vRecG(p){return vRecGen(p,"g")}
 function vRecS(p){return vRecGen(p,"s")}
 function vRecGen(p,part){const n=p.sit,ms=GM(p);
-if(ms.length<2)return selS(p,part=="s"?"Situation":"Décompte")+`<div class="card">Ce projet ne contient qu’un seul devis. Dans « Ouvrir », le bouton « ➕ Devis » permet d’en ajouter.</div>`;
+
 const C=x=>`<td class="r">${fp(x)}</td>`,N=ms.map(q=>({q,s:sitNums(q,n)})),cs=s=>[0,1,2,3].map(i=>Object.values(s.g).reduce((a,o)=>ta(a+o[i]),0)),
 sm=f=>N.reduce((a,x)=>ta(a+f(x.s,x.q)),0),same=ms.every(q=>q.tva==ms[0].tva);
 const rows=N.map(({q,s})=>`<tr><td colspan="6"><b>${esc(q.name)}</b></td></tr>`+Object.entries(s.g).map(([k,o])=>{const m=k.match(/^(LOT\s*\d+\s*\)?)\s*(.*)$/i);return`<tr><td>${esc(m?m[1]:"")}</td><td>${esc(m?m[2]:k)}</td>${o.map(C).join("")}</tr>`}).join("")+`<tr class="tot"><td colspan="2">TOTAL ${esc(q.name)} ( H.T )</td>${cs(s).map(C).join("")}</tr>`).join("");
@@ -281,14 +281,14 @@ const R3=["TOTAL GÉNÉRAL en H.T","T.V.A"+(same?" "+ms[0].tva+" %":""),"TOTAL G
 const Rw=(l,v,c)=>`<tr class="${c||""}"><td>${l}</td><td class="r">${v}</td></tr>`,anyRet=N.some(x=>x.s.ret),cau=sm(s=>s.cau),net=sm(s=>s.net);
 const det=N.map(({q,s})=>`<tr><td>${esc(q.name)}</td>${[s.ht,s.tva,s.ttc,s.rt,s.pen,s.net].map(C).join("")}</tr>`).join(""),
 dt=`<tr class="tot"><td>TOTAL</td>${[sm(s=>s.ht),sm(s=>s.tva),sm(s=>s.ttc),sm(s=>s.rt),sm(s=>s.pen),net].map(C).join("")}</tr>`;
-const c1=`<div class="card sc">${hdr(p)}<div>PROJET : ${esc(p.grp)}</div><b>RÉCAPITULATIVE GÉNÉRALE – DÉCOMPTE N° ${n}</b> (DA)<div style="font-size:12px;color:var(--mut)">Devis réunis : ${ms.map(q=>esc(q.name)).join(" · ")}</div><table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumul</th></tr>${rows}${R3}</table></div>`,
-c2=`<div class="card sitp">${hdr(p)}<div>PROJET : ${esc(p.grp)}</div><h3 style="margin:8px 0 4px">SITUATION GÉNÉRALE N° ${n}</h3>
+const c1=`<div class="card sc">${hdr(p)}<b>RÉCAPITULATIVE GÉNÉRALE – DÉCOMPTE N° ${n}</b> (DA)<div style="font-size:12px;color:var(--mut)">Devis réunis : ${ms.map(q=>esc(q.name)).join(" · ")}</div><table style="margin-top:6px"><tr><th>N°</th><th>Désignation des ouvrages</th><th class="r">Marché</th><th class="r">Précédent</th><th class="r">Mois</th><th class="r">Cumul</th></tr>${rows}${R3}</table></div>`,
+c2=`<div class="card sitp">${hdr(p)}<h3 style="margin:8px 0 4px">SITUATION GÉNÉRALE N° ${n}</h3>
 <table style="width:100%;min-width:0"><tr><th>SITUATION ARRÊTÉE AU …</th><th class="r">MONTANT en DA</th></tr>${Rw("Montant des travaux cumulés ( H.T )",fp(sm(s=>s.cum)))}${Rw("TOTAL (1) ( H.T )",fp(sm(s=>s.T1)),"tot")}${Rw("Montant des travaux réalisés précédemment",fp(sm(s=>s.prev)))}${Rw("TOTAL (2) ( H.T )",fp(sm(s=>s.T2)),"tot")}${Rw("Montant brut de la situation TOTAL (3) = (1) − (2)",fp(sm(s=>s.br)),"tot")}${Rw("TOTAL (4) remboursements ( H.T )",fp(sm(s=>s.T4)),"tot")}${Rw("Montant HT de la situation (5) = (3) − (4)",fp(sm(s=>s.ht)),"tot")}${Rw("T.V.A (6)"+(same?" "+ms[0].tva+" %":""),fp(sm(s=>s.tva)))}${Rw("Montant de la situation en TTC (7) = (5) + (6)",fp(sm(s=>s.ttc)),"tot")}${anyRet?Rw("Retenue de garantie","− "+fp(sm(s=>s.rt))):""}${Rw("Pénalités de retard",fp(sm(s=>s.pen)))}${Rw("NET À PAYER ( en toutes taxes )",fp(net),"net")}</table>
 ${cau>0?`<div style="color:var(--mut);font-size:12px;margin-top:6px">Caution de garantie : ${fmt(cau)} DA</div>`:""}
 <p>Le montant net à payer par la présente situation s’élève à la somme de ( en toutes taxes ) :<br><b>${lettres(net,0)}</b></p>
 <b style="display:block;margin-top:10px">Détail par devis</b><table style="margin-top:6px"><tr><th>Devis</th><th class="r">Montant HT</th><th class="r">T.V.A</th><th class="r">TTC</th><th class="r">Retenue</th><th class="r">Pénalités</th><th class="r">Net à payer</th></tr>${det}${dt}</table>
 <div style="margin-top:8px">Fait à …………… le ……………</div></div>`;
-return selS(p,part=="s"?"Situation":"Décompte")+gnav(part)+(part=="s"?c2:c1)+`<div class="row np">${PB()}</div>`}
+return selS(p,part=="s"?"Situation":"Décompte")+gnav(part)+(part=="s"?c2+`<div class="row np">${PB()}</div>`:`<div class="land">`+c1+`<div class="row np">${PB()}</div></div>`)}
 
 /* ================================================================
    AFFICHAGE — table des pages (VW) et render()
